@@ -4,6 +4,11 @@ If installing from source, run make from with source directory
 make install
 ```
 
+The dblink extension must be created in a schema that is within the search path of the role that will be used for the user mapping below. A default location of the PUBLIC schema is the easiest.
+```
+CREATE EXTENSION dblink;
+```
+
 Create an fdw server & user mapping manually first with your preferred credentials. Leave server name as "pgbouncer". pgbouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database.
 ```
 CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
@@ -11,10 +16,6 @@ CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost
                                                                  dbname 'pgbouncer');
 
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
-```
-The dblink extension must be created in a schema that is within the search path of the role that was used for the above user mapping. A default location of the PUBLIC schema is the easiest.
-```
-CREATE EXTENSION dblink;
 ```
 
 Recommend placing this extension's objects in their own dedicated schema
