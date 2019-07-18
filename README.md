@@ -1,4 +1,8 @@
 ## Setup
+
+Whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). And depending on your pgbouncer configuration, you may also need to add this role to the `auth_users` file. Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
+
+
 If installing from source, run make from with source directory
 ```
 make install
@@ -32,4 +36,36 @@ GRANT USAGE ON FOREIGN SERVER pgbouncer TO ccp_monitoring;
 GRANT USAGE ON SCHEMA pgbouncer TO ccp_monitoring;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA pgbouncer TO ccp_monitoring;
+```
+
+You should now be able to query and of the pgbouncer views
+
+```
+postgres=> select * from pgbouncer.pools;
+-[ RECORD 1 ]---------
+database   | pgbouncer
+user       | pgbouncer
+cl_active  | 1
+cl_waiting | 0
+sv_active  | 0
+sv_idle    | 0
+sv_used    | 0
+sv_tested  | 0
+sv_login   | 0
+maxwait    | 0
+maxwait_us | 0
+pool_mode  | statement
+-[ RECORD 2 ]---------
+database   | postgres
+user       | postgres
+cl_active  | 1
+cl_waiting | 0
+sv_active  | 1
+sv_idle    | 0
+sv_used    | 0
+sv_tested  | 0
+sv_login   | 0
+maxwait    | 0
+maxwait_us | 0
+pool_mode  | session
 ```
