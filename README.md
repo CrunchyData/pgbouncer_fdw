@@ -44,7 +44,8 @@ GRANT USAGE ON SCHEMA pgbouncer TO ccp_monitoring;
 GRANT SELECT ON ALL TABLES IN SCHEMA pgbouncer TO ccp_monitoring;
 ```
 
-You should now be able to query any of the pgbouncer views provided. For the meaning of the views provided, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
+## Usage
+You should be able to query any of the pgbouncer views provided. For the meaning of the views provided, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
 postgres=> select * from pgbouncer.pools;
