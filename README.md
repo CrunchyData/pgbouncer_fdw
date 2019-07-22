@@ -1,3 +1,9 @@
+## Requirements
+
+ * PostgreSQL 9.4+ - https://www.postgresql.org
+ * dblink (contrib module) - https://www.postgresql.org/docs/current/dblink.html
+ * pgbouncer 1.10+ - https://pgbouncer.github.io
+
 ## Setup
 
 Whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). And depending on your pgbouncer configuration, you may also need to add this role to the `auth_users` file. Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
@@ -38,7 +44,7 @@ GRANT USAGE ON SCHEMA pgbouncer TO ccp_monitoring;
 GRANT SELECT ON ALL TABLES IN SCHEMA pgbouncer TO ccp_monitoring;
 ```
 
-You should now be able to query and of the pgbouncer views
+You should now be able to query any of the pgbouncer views provided. For the meaning of the views provided, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
 postgres=> select * from pgbouncer.pools;
