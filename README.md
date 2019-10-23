@@ -20,6 +20,9 @@ CREATE EXTENSION dblink;
 ```
 
 Create an fdw server & user mapping manually first with your preferred credentials. Leave server name as "pgbouncer". Set the port to whichever port pgbouncer itself is running on, NOT the postgres database. pgbouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database.
+
+NOTE: The database role used for the user mapping must have an explicit entry in the pgbouncer auth_file. The auth_query method in pgbouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run.
+
 ```
 CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
                                                                  port '6432',
