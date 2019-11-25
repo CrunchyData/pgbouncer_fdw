@@ -50,6 +50,7 @@ CREATE VIEW @extschema@.pgbouncer_dns_zones AS
     (   zonename text
         , serial text
         , count int);
+
 CREATE VIEW @extschema@.pgbouncer_lists AS
     SELECT * FROM dblink('pgbouncer', 'show lists') AS x 
     (   list text

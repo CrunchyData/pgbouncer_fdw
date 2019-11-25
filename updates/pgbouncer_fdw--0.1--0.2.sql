@@ -1,7 +1,6 @@
 -- Rename objects to have a prefix so installing to public schema is less likely to have naming collisions
 
 DROP VIEW @extschema@.clients;
-DROP VIEW @extschema@.clients;
 DROP VIEW @extschema@.config;
 DROP VIEW @extschema@.databases;
 DROP VIEW @extschema@.dns_hosts;

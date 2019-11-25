@@ -37,17 +37,17 @@ Grant necessary permissions on extension objects to the user mapping role
 ```
 GRANT USAGE ON FOREIGN SERVER pgbouncer TO ccp_monitoring;
 
-GRANT SELECT ON VIEW pgbouncer_clients TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_config TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_databases TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_dns_hosts TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_dns_zones TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_lists TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_pools TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_servers TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_sockets TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_stats TO ccp_monitoring;
-GRANT SELECT ON VIEW pgbouncer_users TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_clients TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_config TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_databases TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_dns_hosts TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_dns_zones TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_lists TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_pools TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_servers TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_sockets TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_stats TO ccp_monitoring;
+GRANT SELECT ON pgbouncer_users TO ccp_monitoring;
 
 ```
 
