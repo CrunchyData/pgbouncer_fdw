@@ -1,3 +1,17 @@
+-- Rename objects to have a prefix so installing to public schema is less likely to have naming collisions
+
+DROP VIEW IF EXISTS @extschema@.clients;
+DROP VIEW IF EXISTS @extschema@.config;
+DROP VIEW IF EXISTS @extschema@.databases;
+DROP VIEW IF EXISTS @extschema@.dns_hosts;
+DROP VIEW IF EXISTS @extschema@.dns_zones;
+DROP VIEW IF EXISTS @extschema@.lists;
+DROP VIEW IF EXISTS @extschema@.pools;
+DROP VIEW IF EXISTS @extschema@.servers;
+DROP VIEW IF EXISTS @extschema@.sockets;
+DROP VIEW IF EXISTS @extschema@.stats;
+DROP VIEW IF EXISTS @extschema@.users;
+
 CREATE VIEW @extschema@.pgbouncer_clients AS
     SELECT * FROM dblink('pgbouncer', 'show clients') AS x
     (   type text
