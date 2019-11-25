@@ -6,10 +6,10 @@
 
 ## Setup
 
-Whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). And depending on your pgbouncer configuration, you may also need to add this role to the `auth_users` file. Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
+Whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). And you will also need to add this role to the `auth_users` file (see NOTE below). Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
 
 
-If installing from source, run make from with source directory
+If installing from source, run make from source directory
 ```
 make install
 ```
@@ -30,28 +30,32 @@ CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost
 
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
-
-Recommend placing this extension's objects in their own dedicated schema
-```
-CREATE SCHEMA pgbouncer;
-
-CREATE EXTENSION pgbouncer_fdw SCHEMA pgbouncer;
+CREATE EXTENSION pgbouncer_fdw;
 ```
 
 Grant necessary permissions on extension objects to the user mapping role
 ```
 GRANT USAGE ON FOREIGN SERVER pgbouncer TO ccp_monitoring;
 
-GRANT USAGE ON SCHEMA pgbouncer TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_clients TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_config TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_databases TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_dns_hosts TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_dns_zones TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_lists TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_pools TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_servers TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_sockets TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_stats TO ccp_monitoring;
+GRANT SELECT ON VIEW pgbouncer_users TO ccp_monitoring;
 
-GRANT SELECT ON ALL TABLES IN SCHEMA pgbouncer TO ccp_monitoring;
 ```
 
 ## Usage
 You should be able to query any of the pgbouncer views provided. For the meaning of the views, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
-postgres=> select * from pgbouncer.pools;
+postgres=> select * from pgbouncer_pools;
 -[ RECORD 1 ]---------
 database   | pgbouncer
 user       | pgbouncer
