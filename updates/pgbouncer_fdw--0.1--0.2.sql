@@ -1,16 +1,16 @@
 -- Rename objects to have a prefix so installing to public schema is less likely to have naming collisions
 
-DROP VIEW @extschema@.clients;
-DROP VIEW @extschema@.config;
-DROP VIEW @extschema@.databases;
-DROP VIEW @extschema@.dns_hosts;
-DROP VIEW @extschema@.dns_zones;
-DROP VIEW @extschema@.lists;
-DROP VIEW @extschema@.pools;
-DROP VIEW @extschema@.servers;
-DROP VIEW @extschema@.sockets;
-DROP VIEW @extschema@.stats;
-DROP VIEW @extschema@.users;
+DROP VIEW IF EXISTS @extschema@.clients;
+DROP VIEW IF EXISTS @extschema@.config;
+DROP VIEW IF EXISTS @extschema@.databases;
+DROP VIEW IF EXISTS @extschema@.dns_hosts;
+DROP VIEW IF EXISTS @extschema@.dns_zones;
+DROP VIEW IF EXISTS @extschema@.lists;
+DROP VIEW IF EXISTS @extschema@.pools;
+DROP VIEW IF EXISTS @extschema@.servers;
+DROP VIEW IF EXISTS @extschema@.sockets;
+DROP VIEW IF EXISTS @extschema@.stats;
+DROP VIEW IF EXISTS @extschema@.users;
 
 CREATE VIEW @extschema@.pgbouncer_clients AS
     SELECT * FROM dblink('pgbouncer', 'show clients') AS x
@@ -64,6 +64,7 @@ CREATE VIEW @extschema@.pgbouncer_dns_zones AS
     (   zonename text
         , serial text
         , count int);
+
 CREATE VIEW @extschema@.pgbouncer_lists AS
     SELECT * FROM dblink('pgbouncer', 'show lists') AS x 
     (   list text
