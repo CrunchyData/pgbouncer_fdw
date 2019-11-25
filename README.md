@@ -30,6 +30,7 @@ CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost
 
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
+```
 CREATE EXTENSION pgbouncer_fdw;
 ```
 
