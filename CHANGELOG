@@ -1,3 +1,7 @@
+v0.3
+-- Add command functions to allow running pgBouncer commands on the target server. Note that the role defined in the user mapping must be given admin access to the pgBouncer admin console. It is recommended to have separate roles in the PostgreSQL database to allow there to be separate user mappings: one for simple monitoring and another for admin console access.
+
+
 v0.2
 
 -- Add "pgbouncer_" prefix to all object names to help avoid naming collisions with commonly named objects. Now no longer generally necessary to install in dedicated schema, but still recommended if possible.

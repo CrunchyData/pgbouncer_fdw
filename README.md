@@ -12,8 +12,9 @@ pgbouncer_fdw provides a direct SQL interface to the pgbouncer SHOW commands. It
 
 ## Setup
 
-Whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). You will also need to add this role to the `auth_users` file (see NOTE below). Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
+For basic monitoring of statistics, whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). You will also need to add this role to the `auth_users` file (see NOTE below). Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
 
+For running of the command functions, that role will have to be added to the `admin_users` list in the pgbouncer configuration. It is not recommended that your monitoring role also be given admin console access. It is recommended to have a separate database role for a separate user mapping to allow access to the pgBouncer to run these commands. 
 
 If installing from source, run make from the source directory
 ```
@@ -36,6 +37,10 @@ CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost
 
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
+Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL databsae to connect to the pgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
+```
+CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
+```
 ```
 CREATE EXTENSION pgbouncer_fdw;
 ```
@@ -57,7 +62,33 @@ GRANT SELECT ON pgbouncer_stats TO ccp_monitoring;
 GRANT SELECT ON pgbouncer_users TO ccp_monitoring;
 
 ```
+For added security, execution on the pgBouncer command functions has been revoked from public by default. You will need to explicitly grant execute privileges on the command functions to your pgBouncer admin role if they are being used.
+```
+GRANT USAGE ON FOREIGN SERVER pgbouncer TO pgb_admin;
 
+GRANT EXECUTE ON FUNCTION pgbouncer_command_disable(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_enable(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_kill(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_pause(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_reconnect(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_reload() TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_resume(text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_set(text, text) TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_shutdown() TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_suspend() TO pgb_admin;
+GRANT EXECUTE ON FUNCTION pgbouncer_command_wait_close(text) TO pgb_admin;
+GRANT SELECT ON pgbouncer_clients TO pgb_admin;
+GRANT SELECT ON pgbouncer_config TO pgb_admin;
+GRANT SELECT ON pgbouncer_databases TO pgb_admin;
+GRANT SELECT ON pgbouncer_dns_hosts TO pgb_admin;
+GRANT SELECT ON pgbouncer_dns_zones TO pgb_admin;
+GRANT SELECT ON pgbouncer_lists TO pgb_admin;
+GRANT SELECT ON pgbouncer_pools TO pgb_admin;
+GRANT SELECT ON pgbouncer_servers TO pgb_admin;
+GRANT SELECT ON pgbouncer_sockets TO pgb_admin;
+GRANT SELECT ON pgbouncer_stats TO pgb_admin;
+GRANT SELECT ON pgbouncer_users TO pgb_admin;
+```
 ## Usage
 You should be able to query any of the pgbouncer views provided. For the meaning of the views, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
 
