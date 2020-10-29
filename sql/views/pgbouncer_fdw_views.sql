@@ -1,3 +1,4 @@
+
 CREATE VIEW @extschema@.pgbouncer_clients AS
     SELECT * FROM dblink('pgbouncer', 'show clients') AS x
     (   type text
@@ -140,3 +141,4 @@ CREATE VIEW @extschema@.pgbouncer_users AS
     SELECT * FROM dblink('pgbouncer', 'show users') AS x
     (   name text
         , pool_mode text);
+
