@@ -1,3 +1,8 @@
+v0.4
+-- Updated to support pgBouncer 1.16.0. Note that as of v0.4, this extension requires at least version 1.16.0 of pgBouncer. If you still need to support an older version, v0.3 still works and there are no other changes in this version other than a compatibility update.
+-- All views are dropped and recreated as part of this update. Privileges should be preserved, but it is recommended to double-check them.
+
+
 v0.3
 -- Add command functions to allow running pgBouncer commands on the target server. Note that the role defined in the user mapping must be given admin access to the pgBouncer admin console. It is recommended to have separate roles in the PostgreSQL database to allow there to be separate user mappings: one for simple monitoring and another for admin console access.
 

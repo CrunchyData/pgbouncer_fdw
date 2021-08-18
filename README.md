@@ -8,7 +8,7 @@ pgbouncer_fdw provides a direct SQL interface to the pgbouncer SHOW commands. It
 
  * PostgreSQL 9.4+ - https://www.postgresql.org
  * dblink (contrib module) - https://www.postgresql.org/docs/current/dblink.html
- * pgbouncer 1.10+ - https://pgbouncer.github.io
+ * pgbouncer 1.16+ - https://pgbouncer.github.io
 
 ## Setup
 
