@@ -1,3 +1,94 @@
+CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_clients TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_clients'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_config TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_config'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_databases TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_databases'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_dns_hosts TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_dns_hosts'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_dns_zones TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_dns_zones'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_lists TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_lists'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_pools TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_pools'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_servers TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_servers'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_sockets TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_sockets'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_stats TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_stats'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_users TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_users'
+GROUP BY grantee;
+
+DROP VIEW @extschema@.pgbouncer_clients;
+DROP VIEW @extschema@.pgbouncer_config;
+DROP VIEW @extschema@.pgbouncer_databases;
+DROP VIEW @extschema@.pgbouncer_dns_hosts;
+DROP VIEW @extschema@.pgbouncer_dns_zones;
+DROP VIEW @extschema@.pgbouncer_lists;
+DROP VIEW @extschema@.pgbouncer_pools;
+DROP VIEW @extschema@.pgbouncer_servers;
+DROP VIEW @extschema@.pgbouncer_sockets;
+DROP VIEW @extschema@.pgbouncer_stats;
+DROP VIEW @extschema@.pgbouncer_users;
+
 CREATE VIEW @extschema@.pgbouncer_clients AS
     SELECT type
            , "user"
@@ -266,3 +357,19 @@ CREATE VIEW @extschema@.pgbouncer_users AS
     FROM dblink('pgbouncer', 'show users') AS x
     (   name text
         , pool_mode text);
+
+
+-- Restore dropped object privileges
+DO $$
+DECLARE
+v_row   record;
+BEGIN
+    FOR v_row IN SELECT statement FROM pgbouncer_fdw_preserve_privs_temp LOOP
+        IF v_row.statement IS NOT NULL THEN
+            EXECUTE v_row.statement;
+        END IF;
+    END LOOP;
+END
+$$;
+
+DROP TABLE IF EXISTS pgbouncer_fdw_preserve_privs_temp;
