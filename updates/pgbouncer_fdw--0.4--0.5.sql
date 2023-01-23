@@ -1,3 +1,38 @@
+CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_clients TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_clients'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_pools TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_pools'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_servers TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_servers'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_sockets TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_sockets'
+GROUP BY grantee;
+
+DROP VIEW @extschema@.pgbouncer_clients;
+DROP VIEW @extschema@.pgbouncer_pools;
+DROP VIEW @extschema@.pgbouncer_servers;
+DROP VIEW @extschema@.pgbouncer_sockets;
+
 CREATE VIEW @extschema@.pgbouncer_clients AS
     SELECT type
            , "user"
@@ -37,77 +72,6 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , tls text
         , application_name text);
 
-
-CREATE VIEW @extschema@.pgbouncer_config AS
-    SELECT key
-          , value
-          , "default"
-          , changeable
-    FROM dblink('pgbouncer', 'show config') AS x
-    (   key text
-        , value text
-        , "default" text
-        , changeable boolean);
-
-
-CREATE VIEW @extschema@.pgbouncer_databases AS
-    SELECT name
-           , host
-           , port
-           , database
-           , force_user
-           , pool_size
-           , min_pool_size
-           , reserve_pool
-           , pool_mode
-           , max_connections
-           , current_connections
-           , paused
-           , disabled
-     FROM dblink('pgbouncer', 'show databases') AS x
-    (   name text
-        , host text
-        , port int
-        , database text
-        , force_user text
-        , pool_size int
-        , min_pool_size int
-        , reserve_pool int
-        , pool_mode text
-        , max_connections int
-        , current_connections int
-        , paused int
-        , disabled int);
-
-
-CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
-    SELECT hostname
-           , ttl
-           , addrs
-    FROM dblink('pgbouncer', 'show dns_hosts') AS x
-    (   hostname text
-        , ttl bigint
-        , addrs text);
-
-
-CREATE VIEW @extschema@.pgbouncer_dns_zones AS
-    SELECT zonename
-           , serial
-           , count
-    FROM dblink('pgbouncer', 'show dns_zones') AS x
-    (   zonename text
-        , serial text
-        , count int);
-
-
-CREATE VIEW @extschema@.pgbouncer_lists AS
-    SELECT list
-           , items
-    FROM dblink('pgbouncer', 'show lists') AS x
-    (   list text
-        , items int);
-
-
 CREATE VIEW @extschema@.pgbouncer_pools AS
     SELECT database
            , "user"
@@ -142,7 +106,6 @@ CREATE VIEW @extschema@.pgbouncer_pools AS
         , maxwait int
         , maxwait_us int
         , pool_mode text);
-
 
 CREATE VIEW @extschema@.pgbouncer_servers AS
     SELECT type
@@ -237,44 +200,17 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , pkt_avail int
         , send_avail int);
 
+-- Restore dropped object privileges
+DO $$
+DECLARE
+v_row   record;
+BEGIN
+    FOR v_row IN SELECT statement FROM pgbouncer_fdw_preserve_privs_temp LOOP
+        IF v_row.statement IS NOT NULL THEN
+            EXECUTE v_row.statement;
+        END IF;
+    END LOOP;
+END
+$$;
 
-CREATE VIEW @extschema@.pgbouncer_stats AS
-    SELECT database
-           , total_xact_count
-           , total_query_count
-           , total_received
-           , total_sent
-           , total_xact_time
-           , total_query_time
-           , total_wait_time
-           , avg_xact_count
-           , avg_query_count
-           , avg_recv
-           , avg_sent
-           , avg_xact_time
-           , avg_query_time
-           , avg_wait_time
-    FROM dblink('pgbouncer', 'show stats') AS x
-    (   database text
-        , total_xact_count bigint
-        , total_query_count bigint
-        , total_received bigint
-        , total_sent bigint
-        , total_xact_time bigint
-        , total_query_time bigint
-        , total_wait_time bigint
-        , avg_xact_count bigint
-        , avg_query_count bigint
-        , avg_recv bigint
-        , avg_sent bigint
-        , avg_xact_time bigint
-        , avg_query_time bigint
-        , avg_wait_time bigint );
-
-
-CREATE VIEW @extschema@.pgbouncer_users AS
-    SELECT name
-           , pool_mode
-    FROM dblink('pgbouncer', 'show users') AS x
-    (   name text
-        , pool_mode text);
+DROP TABLE IF EXISTS pgbouncer_fdw_preserve_privs_temp;

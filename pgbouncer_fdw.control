@@ -1,4 +1,4 @@
-default_version = '0.4'
+default_version = '0.5'
 comment = 'Extension for querying pgbouncer stats from normal SQL views & running pgbouncer commands from normal SQL functions'
 requires = dblink
 relocatable = false
