@@ -70,7 +70,8 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , link text
         , remote_pid int
         , tls text
-        , application_name text);
+        , application_name text
+    );
 
 CREATE VIEW @extschema@.pgbouncer_pools AS
     SELECT database
@@ -105,7 +106,8 @@ CREATE VIEW @extschema@.pgbouncer_pools AS
         , sv_login int
         , maxwait int
         , maxwait_us int
-        , pool_mode text);
+        , pool_mode text
+    );
 
 CREATE VIEW @extschema@.pgbouncer_servers AS
     SELECT type
@@ -144,7 +146,8 @@ CREATE VIEW @extschema@.pgbouncer_servers AS
         , link text
         , remote_pid int
         , tls text
-        , application_name text);
+        , application_name text
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_sockets AS
@@ -198,7 +201,8 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , send_pos int
         , send_remain int
         , pkt_avail int
-        , send_avail int);
+        , send_avail int
+    );
 
 -- Restore dropped object privileges
 DO $$

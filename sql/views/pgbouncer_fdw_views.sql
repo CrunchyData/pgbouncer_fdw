@@ -35,7 +35,8 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , link text
         , remote_pid int
         , tls text
-        , application_name text);
+        , application_name text
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_config AS
@@ -47,7 +48,8 @@ CREATE VIEW @extschema@.pgbouncer_config AS
     (   key text
         , value text
         , "default" text
-        , changeable boolean);
+        , changeable boolean
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_databases AS
@@ -77,7 +79,8 @@ CREATE VIEW @extschema@.pgbouncer_databases AS
         , max_connections int
         , current_connections int
         , paused int
-        , disabled int);
+        , disabled int
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
@@ -87,7 +90,8 @@ CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
     FROM dblink('pgbouncer', 'show dns_hosts') AS x
     (   hostname text
         , ttl bigint
-        , addrs text);
+        , addrs text
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_dns_zones AS
@@ -97,7 +101,8 @@ CREATE VIEW @extschema@.pgbouncer_dns_zones AS
     FROM dblink('pgbouncer', 'show dns_zones') AS x
     (   zonename text
         , serial text
-        , count int);
+        , count int
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_lists AS
@@ -105,7 +110,8 @@ CREATE VIEW @extschema@.pgbouncer_lists AS
            , items
     FROM dblink('pgbouncer', 'show lists') AS x
     (   list text
-        , items int);
+        , items int
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_pools AS
@@ -141,7 +147,8 @@ CREATE VIEW @extschema@.pgbouncer_pools AS
         , sv_login int
         , maxwait int
         , maxwait_us int
-        , pool_mode text);
+        , pool_mode text
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_servers AS
@@ -181,7 +188,8 @@ CREATE VIEW @extschema@.pgbouncer_servers AS
         , link text
         , remote_pid int
         , tls text
-        , application_name text);
+        , application_name text
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_sockets AS
@@ -235,7 +243,8 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , send_pos int
         , send_remain int
         , pkt_avail int
-        , send_avail int);
+        , send_avail int
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_stats AS
@@ -269,7 +278,8 @@ CREATE VIEW @extschema@.pgbouncer_stats AS
         , avg_sent bigint
         , avg_xact_time bigint
         , avg_query_time bigint
-        , avg_wait_time bigint );
+        , avg_wait_time bigint
+    );
 
 
 CREATE VIEW @extschema@.pgbouncer_users AS
@@ -277,4 +287,5 @@ CREATE VIEW @extschema@.pgbouncer_users AS
            , pool_mode
     FROM dblink('pgbouncer', 'show users') AS x
     (   name text
-        , pool_mode text);
+        , pool_mode text
+    );
