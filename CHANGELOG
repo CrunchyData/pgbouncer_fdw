@@ -1,3 +1,8 @@
+v0.5
+-- Update to support pgBouncer 1.18.0. Note that as of v0.5, this extension requires at least version 1.18.0 of pgBouncer. If you still need to support an older version, v0.4 works with pgBouncer 1.16 and v0.3 works with older versions of pgBouncer. There are no other changes in this version other than a compatibility update.
+-- Several views are dropped and recreated as part of this update. Privileges should be preserved, but it is recommended to double-check them.
+
+
 v0.4
 -- Updated to support pgBouncer 1.16.0. Note that as of v0.4, this extension requires at least version 1.16.0 of pgBouncer. If you still need to support an older version, v0.3 still works and there are no other changes in this version other than a compatibility update.
 -- All views are dropped and recreated as part of this update. Privileges should be preserved, but it is recommended to double-check them.
@@ -8,5 +13,4 @@ v0.3
 
 
 v0.2
-
 -- Add "pgbouncer_" prefix to all object names to help avoid naming collisions with commonly named objects. Now no longer generally necessary to install in dedicated schema, but still recommended if possible.
