@@ -26,18 +26,35 @@ The dblink extension must be created in a schema that is within the search path 
 CREATE EXTENSION dblink;
 ```
 
-Create an fdw server & user mapping manually first with your preferred credentials. Leave server name as "pgbouncer". Set the port to whichever port pgbouncer itself is running on, NOT the postgres database. pgbouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database.
+Create one or more FDW servers and a user mapping manually first with your preferred credentials. 
 
-NOTE: The database role used for the user mapping must have an explicit entry in the pgbouncer auth_file. The auth_query method in pgbouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run.
+If only a single pgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one pgbouncer itself is running on, NOT the postgres database. pgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
 
 ```
 CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
                                                                  port '6432',
                                                                  dbname 'pgbouncer');
+```
+If more than one pgbouncer needs to be targeted, give each FDW server a unique name and add those names to the `pgbouncer_fdw_targets` configuration table.
+```
+CREATE SERVER pgbouncer1 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.12',
+                                                                 port '6432',
+                                                                 dbname 'pgbouncer');
+
+CREATE SERVER pgbouncer2 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.13',
+                                                                 port '6432',
+                                                                 dbname 'pgbouncer');
+
+INSERT INTO pgbouncer_fdw_targets (target_host) VALUES ('pgbouncer1'),('pgbouncer2');
+```
+
+NOTE: The database role used for the user mapping must have an explicit entry in the pgbouncer auth_file. The auth_query method in pgbouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run.
 
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
-Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL databsae to connect to the pgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
+If you've configured multiple pgbouncer targets, ensure you've also set the user mappings for all pgBouncer targets.
+
+Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL database to connect to the pgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
 ```
 CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
 ```
@@ -62,6 +79,8 @@ GRANT SELECT ON pgbouncer_stats TO ccp_monitoring;
 GRANT SELECT ON pgbouncer_users TO ccp_monitoring;
 
 ```
+Please remember that if you are monitoring multiple pgBouncers, you may need to do these grants for additional FDW servers.
+
 For added security, execution on the pgBouncer command functions has been revoked from public by default. You will need to explicitly grant execute privileges on the command functions to your pgBouncer admin role if they are being used.
 ```
 GRANT USAGE ON FOREIGN SERVER pgbouncer TO pgb_admin;
