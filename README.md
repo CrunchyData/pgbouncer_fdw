@@ -10,46 +10,50 @@ pgbouncer_fdw provides a direct SQL interface to the pgbouncer SHOW commands. It
  * dblink (contrib module) - https://www.postgresql.org/docs/current/dblink.html
  * pgbouncer 1.16+ - https://pgbouncer.github.io
 
-## Setup
+## Installation
 
-For basic monitoring of statistics, whichever database role you will be using in the user mapping below will have to be added to the `stats_users` list in the pgbouncer configuration (pgbouncer.ini). You will also need to add this role to the `auth_users` file (see NOTE below). Ensure the role used below is able to connect to the special pgbouncer database and run the SHOW commands before setting up the FDW.
+### Database Users
 
-For running of the command functions, that role will have to be added to the `admin_users` list in the pgbouncer configuration. It is not recommended that your monitoring role also be given admin console access. It is recommended to have a separate database role for a separate user mapping to allow access to the pgBouncer to run these commands. 
+For basic monitoring of statistics, whichever database role(s) you will be using in the user mapping below will have to be added to the `stats_users` list in the pgBouncer configuration (pgbouncer.ini). You will also need to add any of these roles to the pgBouncer `auth_users` file. The auth_query method in pgBouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run. Ensure the role(s) used are able to connect to the special `pgbouncer` database and run the SHOW commands before setting up the FDW.
 
-If installing from source, run make from the source directory
+For running of the command functions, roles will have to be added to the `admin_users` list in the pgbouncer configuration. It is not recommended that your monitoring roles also be given admin console access. It is recommended to have a separate database role for a separate user mapping to allow access to the pgBouncer to run these commands. 
+
+### Extension Setup
+
+1. If installing from source, run make from the source directory
 ```
 make install
 ```
 
-The dblink extension must be created in a schema that is within the search path of the role that will be used for the user mapping below. A default location of the PUBLIC schema is the easiest.
+2. The dblink extension must be created in a schema that is within the search path of the role that will be used for the user mapping below. A default location of the PUBLIC schema is the easiest.
 ```
 CREATE EXTENSION dblink;
 ```
 
-Create one or more FDW servers and a user mapping manually first with your preferred credentials. 
+3. Create one or more FDW servers and a user mapping manually first with your preferred credentials. 
 
-If only a single pgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one pgbouncer itself is running on, NOT the postgres database. pgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
+    a. If only a single pgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one pgbouncer itself is running on, NOT the postgres database. pgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
 
+    ```
+    CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
+                                                                     port '6432',
+                                                                     dbname 'pgbouncer');
+    ```
+    b. If more than one pgbouncer needs to be targeted, give each FDW server a unique name and add those names to the `pgbouncer_fdw_targets` configuration table.
+    ```
+    CREATE SERVER pgbouncer1 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.12',
+                                                                     port '6432',
+                                                                     dbname 'pgbouncer');
+
+    CREATE SERVER pgbouncer2 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.13',
+                                                                     port '6432',
+                                                                     dbname 'pgbouncer');
+
+    INSERT INTO pgbouncer_fdw_targets (target_host) VALUES ('pgbouncer1'),('pgbouncer2');
+    ```
+
+4. Create user mappings
 ```
-CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
-                                                                 port '6432',
-                                                                 dbname 'pgbouncer');
-```
-If more than one pgbouncer needs to be targeted, give each FDW server a unique name and add those names to the `pgbouncer_fdw_targets` configuration table.
-```
-CREATE SERVER pgbouncer1 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.12',
-                                                                 port '6432',
-                                                                 dbname 'pgbouncer');
-
-CREATE SERVER pgbouncer2 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.13',
-                                                                 port '6432',
-                                                                 dbname 'pgbouncer');
-
-INSERT INTO pgbouncer_fdw_targets (target_host) VALUES ('pgbouncer1'),('pgbouncer2');
-```
-
-NOTE: The database role used for the user mapping must have an explicit entry in the pgbouncer auth_file. The auth_query method in pgbouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run.
-
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
 If you've configured multiple pgbouncer targets, ensure you've also set the user mappings for all pgBouncer targets.
@@ -58,11 +62,13 @@ Optionally create a separate user mapping to allow admin command access. The exa
 ```
 CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
 ```
+
+5. Create the extension in the monitoring database
 ```
 CREATE EXTENSION pgbouncer_fdw;
 ```
 
-Grant necessary permissions on extension objects to the user mapping role
+6. Grant necessary permissions on extension objects to the user mapping role
 ```
 GRANT USAGE ON FOREIGN SERVER pgbouncer TO ccp_monitoring;
 
@@ -108,6 +114,7 @@ GRANT SELECT ON pgbouncer_sockets TO pgb_admin;
 GRANT SELECT ON pgbouncer_stats TO pgb_admin;
 GRANT SELECT ON pgbouncer_users TO pgb_admin;
 ```
+
 ## Usage
 You should be able to query any of the pgbouncer views provided. For the meaning of the views, see the pgbouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
 
