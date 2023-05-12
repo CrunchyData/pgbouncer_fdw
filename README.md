@@ -222,7 +222,7 @@ application_name      | app - 192.168.122.16:56574
 
 *Q: When supporting multiple versions of pgBouncer, how are new/old/renamed columns handled?*
 
-A: pgbouncer_fdw will return all columns for all supported versions of pgBouncer. This means that there may be columns being returned that have no data because that version of pgBouncer did not have that column. This means older versions of pgBouncer will see columns that only exist in newer versions being returned by the FDW. They will just have zero'd out data. 
+A: pgbouncer_fdw will return all columns for all supported versions of pgBouncer. This means that there may be columns being returned that have no data because that version of pgBouncer does not have that column.
 
 If a newer version of pgBouncer drops a column completely, pgbouncer_fdw will support it for a limited time with an empty value and evaluate a time period when support for versions with that old column will be deprecated.
 
