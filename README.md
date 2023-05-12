@@ -166,20 +166,58 @@ pool_mode             | statement
 
 *Q: If connecting to multiple pgBouncer's, how does pgBouncer_fdw handle one or more of the target hosts being down while others are up?*
 
-A: A warning is given for each target host that cannot be connected to. Hosts that are still up should have their metrics returned
+A: A warning is given for each target host that cannot be connected to. The warning contains the full context of the original error message to help with debugging.
+
+Hosts that are still up should have their metrics returned. Example with `pgbouncer2` target down.
 ```
-postgres=# select * from pgbouncer_fdw_targets;
+postgres=# select * from pgbouncer_fdw_targets ;
  target_host | active 
 -------------+--------
  pgbouncer   | t
  pgbouncer2  | t
-
-postgres=# select * from pgbouncer_users;
+(2 rows)
+```
+```
+postgres=# select * from pgbouncer_clients;
 WARNING:  pgbouncer_fdw: Unable to establish connection to pgBouncer target host: pgbouncer2. Continuing to additional hosts.
- pgbouncer_target_host |      name      | pool_mode 
------------------------+----------------+-----------
- pgbouncer             | ccp_monitoring | 
- pgbouncer             | pgbouncer      | 
+ORIGINAL ERROR: could not establish connection
+CONTEXT: SQL statement "SELECT 
+        v_row.target_host AS pgbouncer_target_host
+        , split_part(substring(version from '\d.+'), '.', 1)::int AS version_major
+        , split_part(substring(version from '\d.+'), '.', 2)::int AS version_minor
+        , split_part(substring(version from '\d.+'), '.', 3)::int AS version_patch
+    FROM dblink(v_row.target_host, 'show version') AS x
+    (   
+        version text
+    )"
+PL/pgSQL function pgbouncer_version_func(text) line 18 at RETURN QUERY
+SQL statement "SELECT version_major, version_minor
+                                              FROM public.pgbouncer_version_func(v_row.target_host)"
+PL/pgSQL function pgbouncer_clients_func() line 16 at SQL statement
+DETAIL: connection to server at "192.168.122.12", port 6432 failed: Connection refused
+        Is the server running on that host and accepting TCP/IP connections?
+HINT: 
+-[ RECORD 1 ]---------+---------------------------
+pgbouncer_target_host | pgbouncer
+type                  | C
+user                  | ccp_monitoring
+database              | pgbouncer
+state                 | active
+addr                  | 192.168.122.16
+port                  | 56574
+local_addr            | 192.168.122.13
+local_port            | 6432
+connect_time          | 2023-05-12 17:05:52-04
+request_time          | 2023-05-12 17:05:52-04
+wait                  | 0
+wait_us               | 0
+close_needed          | 0
+ptr                   | 0x15d8b00
+link                  | 
+remote_pid            | 0
+tls                   | 
+application_name      | app - 192.168.122.16:56574
+
 ```
 
 *Q: When supporting multiple versions of pgBouncer, how are new/old/renamed columns handled?*
@@ -213,5 +251,5 @@ tls                   |
 application_name      |
 ```
 
-For renamed columns, the newly named column will always be returned and the old column name will not be available no matter the version of pgBouncer you are running. For example, in the `pgbouncer_pools` view for the `SHOW POOLS` command, the old `cl_cancel_req` in v1.17 was renamed to `cl_waiting_cancel_req` in 1.18. This means that for pgBouncer 1.17, you can get the value of `cl_canel_req` by looking at the value of `cl_waiting_cancel_req`.
+For renamed columns, the newly named column will always be returned and the old column name will not be available no matter the version of pgBouncer you are running. For example, in the `pgbouncer_pools` view for the `SHOW POOLS` command, the old `cl_cancel_req` in v1.17 was renamed to `cl_waiting_cancel_req` in 1.18. This means that for pgBouncer 1.17, you can get the value of `cl_cancel_req` by looking at the value of `cl_waiting_cancel_req`.
 
