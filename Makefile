@@ -5,17 +5,14 @@ EXTVERSION = $(shell grep default_version $(EXTENSION).control | \
 DATA = $(filter-out $(wildcard sql/*--*.sql),$(wildcard sql/*.sql))
 #DOCS = $(wildcard doc/*.md)
 PG_CONFIG = pg_config
-PG94 = $(shell $(PG_CONFIG) --version | egrep " 8\.| 9\.0| 9\.1| 9\.2| 9\.3" > /dev/null && echo no || echo yes)
 
-ifeq ($(PG94),yes)
 all: sql/$(EXTENSION)--$(EXTVERSION).sql
 
-sql/$(EXTENSION)--$(EXTVERSION).sql: $(sort $(wildcard sql/views/*.sql)) $(sort $(wildcard sql/functions/*.sql))
+sql/$(EXTENSION)--$(EXTVERSION).sql: $(sort $(wildcard sql/tables/*.sql)) $(sort $(wildcard sql/functions/*.sql)) $(sort $(wildcard sql/views/*.sql))
 	cat $^ > $@
 
 DATA = $(wildcard updates/*--*.sql) sql/$(EXTENSION)--$(EXTVERSION).sql
 EXTRA_CLEAN = sql/$(EXTENSION)--$(EXTVERSION).sql
-endif
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)
