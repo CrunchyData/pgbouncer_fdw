@@ -471,7 +471,7 @@ BEGIN
 
 FOR v_row IN  
     SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
-LOOP BEGIN;
+LOOP BEGIN
 
     RETURN QUERY SELECT 
         v_row.target_host AS pgbouncer_target_host

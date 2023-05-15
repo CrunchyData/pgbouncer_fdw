@@ -73,8 +73,8 @@ CREATE VIEW @extschema@.pgbouncer_dns_zones AS
 
 CREATE VIEW @extschema@.pgbouncer_lists AS
     SELECT pgbouncer_target_host
-        , list text
-        , items int
+        , list
+        , items
      FROM @extschema@.pgbouncer_lists_func();
 
 
