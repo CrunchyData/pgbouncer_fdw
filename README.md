@@ -120,7 +120,7 @@ GRANT SELECT ON pgbouncer_users TO pgb_admin;
 ```
 
 ## Usage
-You should be able to query any of the pgBouncer views provided. For the meaning of the views, see the pgBouncer documentation (linked above). Not all views are provided either due to recommendations from author (FDS) or duplication of other view data already provided (STATS_TOTALS, STATS_AVERAGES, etc).
+You should be able to query any of the pgBouncer views provided. For the meaning of the views, see the pgBouncer documentation (linked above). Not all views are provided due to recommendations from author (FDS) or duplication of data already provided by other views (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
 postgres=# select * from pgbouncer_pools;
