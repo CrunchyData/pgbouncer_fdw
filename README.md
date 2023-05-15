@@ -1,22 +1,22 @@
-# pgBouncer Foreign Data Wrapper
+# PgBouncer Foreign Data Wrapper
 
 ## Introduction
 
-pgbouncer_fdw provides a direct SQL interface to the pgBouncer SHOW commands. It takes advantage of the dblink_fdw feature to provide a more typical, table-like interface to the current status of your pgBouncer server(s). This makes it easier to set up monitoring or other services that require direct access to pgBouncer statistics.
+pgbouncer_fdw provides a direct SQL interface to the PgBouncer SHOW commands. It takes advantage of the dblink_fdw feature to provide a more typical, table-like interface to the current status of your PgBouncer server(s). This makes it easier to set up monitoring or other services that require direct access to PgBouncer statistics.
 
 ## Requirements
 
  * PostgreSQL 11+ - https://www.postgresql.org
  * dblink (contrib module) - https://www.postgresql.org/docs/current/dblink.html
- * pgBouncer 1.17+ - https://pgbouncer.github.io
+ * PgBouncer 1.17+ - https://pgbouncer.github.io
 
 ## Installation
 
 ### Database Users
 
-For basic monitoring of statistics, whichever database role(s) you will be using in the user mapping below will have to be added to the `stats_users` list in the pgBouncer configuration (pgbouncer.ini). You will also need to add any of these roles to the pgBouncer `auth_users` file. The auth_query method in pgBouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run. Ensure the role(s) used are able to connect to the special `pgbouncer` database and run the SHOW commands before setting up the FDW.
+For basic monitoring of statistics, whichever database role(s) you will be using in the user mapping below will have to be added to the `stats_users` list in the PgBouncer configuration (pgbouncer.ini). You will also need to add any of these roles to the PgBouncer `auth_users` file. The auth_query method in PgBouncer cannot be used to connect to the special `pgbouncer` database where the SHOW commands must be run. Ensure the role(s) used are able to connect to the special `pgbouncer` database and run the SHOW commands before setting up the FDW.
 
-For running of the command functions, roles will have to be added to the `admin_users` list in the pgBouncer configuration. It is not recommended that your monitoring roles also be given admin console access. It is recommended to have a separate database role for a separate user mapping to allow access to the pgBouncer to run these commands. 
+For running of the command functions, roles will have to be added to the `admin_users` list in the PgBouncer configuration. It is not recommended that your monitoring roles also be given admin console access. It is recommended to have a separate database role for a separate user mapping to allow access to the PgBouncer to run these commands. 
 
 ### Extension Setup
 
@@ -32,7 +32,7 @@ CREATE EXTENSION dblink;
 
 3. Create one or more FDW servers and a user mapping manually with your preferred credentials. 
 
-    a. If only a single pgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one pgBouncer itself is running on, NOT the postgres database. pgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
+    a. If only a single PgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one PgBouncer itself is running on, NOT the postgres database. PgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
 
     ```
     CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
@@ -60,9 +60,9 @@ CREATE EXTENSION dblink;
 ```
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
-If you've configured multiple pgbouncer targets, ensure you've also set the user mappings for all pgBouncer targets.
+If you've configured multiple pgbouncer targets, ensure you've also set the user mappings for all PgBouncer targets.
 
-Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL database to connect to the pgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
+Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL database to connect to the PgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
 ```
 CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
 ```
@@ -89,9 +89,9 @@ GRANT SELECT ON pgbouncer_stats TO ccp_monitoring;
 GRANT SELECT ON pgbouncer_users TO ccp_monitoring;
 
 ```
-Please remember that if you are monitoring multiple pgBouncers, you may need to do these grants for additional FDW servers.
+Please remember that if you are monitoring multiple PgBouncers, you may need to do these grants for additional FDW servers.
 
-For added security, execution on the pgBouncer command functions has been revoked from public by default. You will need to explicitly grant execute privileges on the command functions to your pgBouncer admin role if they are being used.
+For added security, execution on the PgBouncer command functions has been revoked from public by default. You will need to explicitly grant execute privileges on the command functions to your PgBouncer admin role if they are being used.
 ```
 GRANT USAGE ON FOREIGN SERVER pgbouncer TO pgb_admin;
 
@@ -120,7 +120,7 @@ GRANT SELECT ON pgbouncer_users TO pgb_admin;
 ```
 
 ## Usage
-You should be able to query any of the pgBouncer views provided. For the meaning of the views, see the pgBouncer documentation (linked above). Not all views are provided due to recommendations from author (FDS) or duplication of data already provided by other views (STATS_TOTALS, STATS_AVERAGES, etc).
+You should be able to query any of the PgBouncer views provided. For the meaning of the views, see the PgBouncer documentation (linked above). Not all views are provided due to recommendations from author (FDS) or duplication of data already provided by other views (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
 postgres=# select * from pgbouncer_pools;
@@ -164,7 +164,7 @@ pool_mode             | statement
 
 ## FAQ
 
-*Q: If connecting to multiple pgBouncer's, how does pgBouncer_fdw handle one or more of the target hosts being down while others are up?*
+*Q: If connecting to multiple PgBouncer's, how does PgBouncer_fdw handle one or more of the target hosts being down while others are up?*
 
 A: A warning is given for each target host that cannot be connected to. The warning contains the full context of the original error message to help with debugging.
 
@@ -179,7 +179,7 @@ postgres=# select * from pgbouncer_fdw_targets ;
 ```
 ```
 postgres=# select * from pgbouncer_clients;
-WARNING:  pgbouncer_fdw: Unable to establish connection to pgBouncer target host: pgbouncer2. Continuing to additional hosts.
+WARNING:  pgbouncer_fdw: Unable to establish connection to PgBouncer target host: pgbouncer2. Continuing to additional hosts.
 ORIGINAL ERROR: could not establish connection
 CONTEXT: SQL statement "SELECT 
         v_row.target_host AS pgbouncer_target_host
@@ -220,13 +220,13 @@ application_name      | app - 192.168.122.16:56574
 
 ```
 
-*Q: When supporting multiple versions of pgBouncer, how are new/old/renamed columns handled?*
+*Q: When supporting multiple versions of PgBouncer, how are new/old/renamed columns handled?*
 
-A: pgbouncer_fdw will return all columns for all supported versions of pgBouncer. This means that there may be columns being returned that have no data because that version of pgBouncer does not have that column.
+A: pgbouncer_fdw will return all columns for all supported versions of PgBouncer. This means that there may be columns being returned that have no data because that version of PgBouncer does not have that column.
 
-If a newer version of pgBouncer drops a column completely, pgbouncer_fdw will support it for a limited time with an empty value and evaluate a time period when support for versions with that old column will be deprecated.
+If a newer version of PgBouncer drops a column completely, pgbouncer_fdw will support it for a limited time with an empty value and evaluate a time period when support for versions with that old column will be deprecated.
 
-For example, the application_name column will show up if you are running pgBouncer 1.17, but it will have an empty string for a value.
+For example, the application_name column will show up if you are running PgBouncer 1.17, but it will have an empty string for a value.
 ```
 postgres=# select * from pgbouncer_clients;
 -[ RECORD 1 ]---------+---------------------------
@@ -251,5 +251,5 @@ tls                   |
 application_name      |
 ```
 
-For renamed columns, the newly named column will always be returned and the old column name will not be available no matter the version of pgBouncer you are running. For example, in the `pgbouncer_pools` view for the `SHOW POOLS` command, the old `cl_cancel_req` in v1.17 was renamed to `cl_waiting_cancel_req` in 1.18. This means that for pgBouncer 1.17, you can get the value of `cl_cancel_req` by looking at the value of `cl_waiting_cancel_req`.
+For renamed columns, the newly named column will always be returned and the old column name will not be available no matter the version of PgBouncer you are running. For example, in the `pgbouncer_pools` view for the `SHOW POOLS` command, the old `cl_cancel_req` in v1.17 was renamed to `cl_waiting_cancel_req` in 1.18. This means that for PgBouncer 1.17, you can get the value of `cl_cancel_req` by looking at the value of `cl_waiting_cancel_req`.
 
