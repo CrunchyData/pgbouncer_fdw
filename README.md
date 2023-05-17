@@ -62,7 +62,7 @@ CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', 
 ```
 If you've configured multiple pgbouncer targets, ensure you've also set the user mappings for all PgBouncer targets.
 
-Optionally create a separate user mapping to allow admin command access. The example below sets the `pg_admin` role that exists in the PostgreSQL database to connect to the PgBouncer admin console as the role `pg_admin` which should be in the pgbouncer.ini `admin_users` list
+Optionally create a separate user mapping to allow admin command access. The example below sets the `pgb_admin` role that exists in the PostgreSQL database to connect to the PgBouncer admin console as the role `pgb_admin` which should be in the pgbouncer.ini `admin_users` list
 ```
 CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
 ```

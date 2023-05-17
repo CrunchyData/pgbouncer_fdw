@@ -1,5 +1,6 @@
 CREATE VIEW @extschema@.pgbouncer_version AS
-    SELECT version_major
+    SELECT pgbouncer_target_host
+        ,  version_major
         , version_minor
         , version_patch
     FROM @extschema@.pgbouncer_version_func();
