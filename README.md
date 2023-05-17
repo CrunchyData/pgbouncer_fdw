@@ -164,7 +164,7 @@ pool_mode             | statement
 
 ## FAQ
 
-*Q: If connecting to multiple PgBouncer's, how does PgBouncer_fdw handle one or more of the target hosts being down while others are up?*
+*Q: If connecting to multiple PgBouncer's, how does `pgbouncer_fdw` handle one or more of the target hosts being down while others are up?*
 
 A: A warning is given for each target host that cannot be connected to. The warning contains the full context of the original error message to help with debugging.
 
