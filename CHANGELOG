@@ -6,7 +6,7 @@ v1.0.0
   -- All views have an additional column to identify the pgBouncer target
   -- All administrative command functions have had a parameter for the FDW server name added to them. These functions intentionally do not use the configuration table to avoid accidentally running an admin command on multiple servers.
 
--- Add better support for multiple versions of pgBouncer. Support for 1.17 has been backported into this version of pgbouncer_fdw.
+-- Add better support for multiple versions of PgBouncer. Support for 1.17 has been backported into this version of pgbouncer_fdw.
 
 
 v0.5
