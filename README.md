@@ -39,7 +39,7 @@ CREATE EXTENSION dblink;
                                                                      port '6432',
                                                                      dbname 'pgbouncer');
     ```
-    b. If more than one pgbouncer needs to be targeted, give each FDW server a unique name and add those names to the `pgbouncer_fdw_targets` configuration table.
+    b. If more than one PgBouncer needs to be targeted, give each FDW server a unique name and add those names to the `pgbouncer_fdw_targets` configuration table.
     ```
     CREATE SERVER pgbouncer1 FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host '192.168.122.12',
                                                                      port '6432',
