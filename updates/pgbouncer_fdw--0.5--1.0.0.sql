@@ -231,6 +231,8 @@ LOOP BEGIN
            , remote_pid int
            , tls text
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
     END IF;
     EXCEPTION
         WHEN connection_exception THEN
@@ -732,6 +734,8 @@ LOOP BEGIN
             , maxwait_us int
             , pool_mode text
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
     END IF;
     EXCEPTION
         WHEN connection_exception THEN
@@ -901,6 +905,8 @@ LOOP BEGIN
             , remote_pid int
             , tls text
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
     END IF;
     EXCEPTION
         WHEN connection_exception THEN
@@ -1106,6 +1112,8 @@ LOOP BEGIN
             , pkt_avail int
             , send_avail int
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
     END IF;
     EXCEPTION
         WHEN connection_exception THEN
