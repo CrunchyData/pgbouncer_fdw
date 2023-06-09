@@ -1,3 +1,14 @@
+v1.0.0
+-- IMPORTANT NOTE: All objects in this extension are dropped and recreated as part of this update. Privileges ARE NOT preserved as part of this update, so please ensure privileges you have on these objects are preserved before upgrading so that they can be reapplied. Note that execution by PUBLIC on the admin functions is once again revoked by this update.
+
+-- Add support for gathering statistics from multiple pgBouncer targets
+  -- A new configuration table has been added to define the names of all FDW servers.
+  -- All views have an additional column to identify the pgBouncer target
+  -- All administrative command functions have had a parameter for the FDW server name added to them. These functions intentionally do not use the configuration table to avoid accidentally running an admin command on multiple servers.
+
+-- Add better support for multiple versions of PgBouncer. Support for 1.17 has been backported into this version of pgbouncer_fdw.
+
+
 v0.5
 -- Update to support pgBouncer 1.18.0. Note that as of v0.5, this extension requires at least version 1.18.0 of pgBouncer. If you still need to support an older version, v0.4 works with pgBouncer 1.16 and v0.3 works with older versions of pgBouncer. There are no other changes in this version other than a compatibility update.
 -- Several views are dropped and recreated as part of this update. Privileges should be preserved, but it is recommended to double-check them.

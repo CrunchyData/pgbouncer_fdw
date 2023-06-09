@@ -1,5 +1,47 @@
+-- IMPORTANT NOTE: All objects in this extension are dropped and recreated as part of this update. Privileges ARE NOT preserved as part of this update, so please ensure privileges you have on these objects are preserved before upgrading so that they can be reapplied. Note that execution by PUBLIC on the admin functions is once again revoked by this update.
 
-/**** VIEW FUNCTIONS ****/
+-- Add support for gathering statistics from multiple pgBouncer targets
+  -- A new configuration table has been added to define the names of all FDW servers.
+  -- All administrative command functions have had a parameter for the FDW server name added to them. These functions intentionally do not use the configuration table to avoid accidentally running an admin command on multiple servers.
+
+-- Add better support for multiple versions of pgBouncer. Support for 1.17 has been backported into this version of pgbouncer_fdw.
+
+DROP VIEW @extschema@.pgbouncer_clients;
+DROP VIEW @extschema@.pgbouncer_config;
+DROP VIEW @extschema@.pgbouncer_databases;
+DROP VIEW @extschema@.pgbouncer_dns_hosts;
+DROP VIEW @extschema@.pgbouncer_dns_zones;
+DROP VIEW @extschema@.pgbouncer_lists;
+DROP VIEW @extschema@.pgbouncer_pools;
+DROP VIEW @extschema@.pgbouncer_servers;
+DROP VIEW @extschema@.pgbouncer_sockets;
+DROP VIEW @extschema@.pgbouncer_stats;
+DROP VIEW @extschema@.pgbouncer_users;
+
+DROP FUNCTION @extschema@.pgbouncer_command_disable(text);
+DROP FUNCTION @extschema@.pgbouncer_command_enable(text);
+DROP FUNCTION @extschema@.pgbouncer_command_kill(text);
+DROP FUNCTION @extschema@.pgbouncer_command_pause(text);
+DROP FUNCTION @extschema@.pgbouncer_command_reconnect(text);
+DROP FUNCTION @extschema@.pgbouncer_command_reload();
+DROP FUNCTION @extschema@.pgbouncer_command_resume(text);
+DROP FUNCTION @extschema@.pgbouncer_command_set(text, text);
+DROP FUNCTION @extschema@.pgbouncer_command_shutdown();
+DROP FUNCTION @extschema@.pgbouncer_command_suspend();
+DROP FUNCTION @extschema@.pgbouncer_command_wait_close(text);
+
+/*
+ * pgbouncer_fdw_targets 
+ */
+CREATE TABLE @extschema@.pgbouncer_fdw_targets (
+    target_host text NOT NULL
+    , active boolean NOT NULL DEFAULT true
+    , CONSTRAINT pgbouncer_fdw_targets_pk PRIMARY KEY (target_host) );
+CREATE INDEX pgbouncer_fdw_targets_active_idx ON pgbouncer_fdw_targets (active);
+SELECT pg_catalog.pg_extension_config_dump('pgbouncer_fdw_targets', '');
+
+INSERT INTO @extschema@.pgbouncer_fdw_targets ( target_host ) VALUES ('pgbouncer');
+
 
 /*
  * pgbouncer_version_func
@@ -53,6 +95,13 @@ END;
 END LOOP;
 END
 $$;
+
+CREATE VIEW @extschema@.pgbouncer_version AS
+    SELECT pgbouncer_target_host
+        , version_major
+        , version_minor
+        , version_patch
+    FROM @extschema@.pgbouncer_version_func();
 
 
 /*
@@ -203,6 +252,28 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_clients AS
+    SELECT pgbouncer_target_host
+        , "type"
+        , "user"
+        , database
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+    FROM @extschema@.pgbouncer_clients_func();
+
 
 /*
  * pgbouncer_config_func
@@ -258,6 +329,14 @@ END LOOP;
 
 END
 $$;
+
+CREATE VIEW @extschema@.pgbouncer_config AS
+    SELECT pgbouncer_target_host
+        , key
+        , value
+        , "default"
+        , changeable
+    FROM @extschema@.pgbouncer_config_func();
 
 
 /*
@@ -343,6 +422,23 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_databases AS
+    SELECT pgbouncer_target_host
+        , name
+        , host
+        , port
+        , database
+        , force_user
+        , pool_size
+        , min_pool_size
+        , reserve_pool
+        , pool_mode
+        , max_connections
+        , current_connections
+        , paused
+        , disabled
+     FROM @extschema@.pgbouncer_databases_func();
+
 
 /*
  * pgbouncer_dns_hosts_func
@@ -397,6 +493,12 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
+    SELECT pgbouncer_target_host
+        , hostname
+        , ttl
+        , addrs
+     FROM @extschema@.pgbouncer_dns_hosts_func();
 
 /*
  * pgbouncer_dns_zones_func
@@ -451,6 +553,13 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_dns_zones AS
+    SELECT pgbouncer_target_host
+        zonename
+        , serial
+        , count
+     FROM @extschema@.pgbouncer_dns_zones_func();
+
 
 /*
  * pgbouncer_lists_func
@@ -501,6 +610,12 @@ END LOOP;
 
 END
 $$;
+
+CREATE VIEW @extschema@.pgbouncer_lists AS
+    SELECT pgbouncer_target_host
+        , list
+        , items
+     FROM @extschema@.pgbouncer_lists_func();
 
 
 /*
@@ -639,6 +754,26 @@ END LOOP;
 
 END
 $$;
+
+CREATE VIEW @extschema@.pgbouncer_pools AS
+    SELECT pgbouncer_target_host 
+        , database
+        , "user"
+        , cl_active
+        , cl_waiting
+        , cl_active_cancel_req
+        , cl_waiting_cancel_req
+        , sv_active
+        , sv_active_cancel
+        , sv_being_canceled
+        , sv_idle
+        , sv_used
+        , sv_tested
+        , sv_login
+        , maxwait
+        , maxwait_us
+        , pool_mode
+    FROM @extschema@.pgbouncer_pools_func();
 
 
 /*
@@ -790,6 +925,28 @@ END LOOP;
 
 END
 $$;
+
+CREATE VIEW @extschema@.pgbouncer_servers AS
+    SELECT pgbouncer_target_host
+        "type"
+        , "user"
+        , database
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+     FROM @extschema@.pgbouncer_servers_func();
 
 
 /*
@@ -976,6 +1133,35 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_sockets AS
+    SELECT pgbouncer_target_host
+        , "type"
+        , "user"
+        , database
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+        , recv_pos
+        , pkt_pos
+        , pkt_remain
+        , send_pos
+        , send_remain
+        , pkt_avail
+        , send_avail
+     FROM @extschema@.pgbouncer_sockets_func();
+
 
 /*
  * pgbouncer_stats_func
@@ -1066,6 +1252,25 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_stats AS
+    SELECT pgbouncer_target_host
+        , database
+        , total_xact_count
+        , total_query_count
+        , total_received
+        , total_sent
+        , total_xact_time
+        , total_query_time
+        , total_wait_time
+        , avg_xact_count
+        , avg_query_count
+        , avg_recv
+        , avg_sent
+        , avg_xact_time
+        , avg_query_time
+        , avg_wait_time
+     FROM @extschema@.pgbouncer_stats_func();
+
 /*
  * pgbouncer_users_func
  */
@@ -1115,8 +1320,14 @@ END LOOP;
 END
 $$;
 
+CREATE VIEW @extschema@.pgbouncer_users AS
+    SELECT pgbouncer_target_host
+        , name
+        , pool_mode
+     FROM @extschema@.pgbouncer_users_func();
 
-/**** ADMIN FUNCTIONS ****/
+
+/**** ADMIN FUNCTIONS */
 
 CREATE FUNCTION @extschema@.pgbouncer_command_disable(p_dbname text, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
 LANGUAGE plpgsql
