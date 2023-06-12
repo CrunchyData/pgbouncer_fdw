@@ -30,9 +30,14 @@ make install
 CREATE EXTENSION dblink;
 ```
 
-3. Create one or more FDW servers and a user mapping manually with your preferred credentials. 
+3. Create the extension in the monitoring database. PgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
+```
+CREATE EXTENSION pgbouncer_fdw;
+```
 
-    a. If only a single PgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one PgBouncer itself is running on, NOT the postgres database. PgBouncer statistics are global so it only needs to be monitored from a single database. If you have multiple databases in your cluster, it is recommended to just install it to the default `postgres` database, or whichever one is being used as a global database that will never be dropped.
+4. Create one or more FDW servers in the same database where the extension was installed.
+
+    a. If only a single PgBouncer server is the target, leave FDW the server name as `pgbouncer` to use the default configuration. This avoids needing to use the configuration table at all. Set the port(s) to whichever one PgBouncer itself is running on, NOT the postgres database. 
 
     ```
     CREATE SERVER pgbouncer FOREIGN DATA WRAPPER dblink_fdw OPTIONS (host 'localhost',
@@ -56,7 +61,7 @@ CREATE EXTENSION dblink;
     UPDATE pgbouncer_fdw_targets SET active = false WHERE target_host = 'pgbouncer';
     ```
 
-4. Create user mappings
+5. Create user mapping(s) with your preferred credentials in the same database as the FDW(s).
 ```
 CREATE USER MAPPING FOR PUBLIC SERVER pgbouncer OPTIONS (user 'ccp_monitoring', password 'mypassword');
 ```
@@ -65,11 +70,6 @@ If you've configured multiple pgbouncer targets, ensure you've also set the user
 Optionally create a separate user mapping to allow admin command access. The example below sets the `pgb_admin` role that exists in the PostgreSQL database to connect to the PgBouncer admin console as the role `pgb_admin` which should be in the pgbouncer.ini `admin_users` list
 ```
 CREATE USER MAPPING FOR pgb_admin SERVER pgbouncer OPTIONS (user 'pgb_admin', password 'supersecretpassword');
-```
-
-5. Create the extension in the monitoring database
-```
-CREATE EXTENSION pgbouncer_fdw;
 ```
 
 6. Grant necessary permissions on extension objects to the user mapping role
@@ -120,7 +120,7 @@ GRANT SELECT ON pgbouncer_users TO pgb_admin;
 ```
 
 ## Usage
-You should be able to query any of the PgBouncer views provided. For the meaning of the views, see the PgBouncer documentation (linked above). Not all views are provided due to recommendations from author (FDS) or duplication of data already provided by other views (STATS_TOTALS, STATS_AVERAGES, etc).
+You should be able to query any of the PgBouncer views provided. For the meaning of the views, see the PgBouncer documentation (linked above). Not all views are provided due to recommendations from upstream author (FDS) or duplication of data already provided by other views (STATS_TOTALS, STATS_AVERAGES, etc).
 
 ```
 postgres=# select * from pgbouncer_pools;
