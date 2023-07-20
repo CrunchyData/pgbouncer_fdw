@@ -66,7 +66,7 @@ CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
 
 CREATE VIEW @extschema@.pgbouncer_dns_zones AS
     SELECT pgbouncer_target_host
-        zonename
+        , zonename
         , serial
         , count
      FROM @extschema@.pgbouncer_dns_zones_func();
@@ -178,5 +178,3 @@ CREATE VIEW @extschema@.pgbouncer_users AS
         , name
         , pool_mode
      FROM @extschema@.pgbouncer_users_func();
-
-

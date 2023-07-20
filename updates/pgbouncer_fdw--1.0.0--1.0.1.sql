@@ -1,4 +1,4 @@
--- Fix missing comma that caused missing column "pgbouncer_target_host" in "pgbouncer_servers" view
+-- Fix missing comma that caused missing column "pgbouncer_target_host" in "pgbouncer_servers" and "pgbouncer_dns_zones" views
 
 CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
 
@@ -9,7 +9,15 @@ WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_servers'
 GROUP BY grantee;
 
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_dns_zones TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_dns_zones'
+GROUP BY grantee;
+
 DROP VIEW @extschema@.pgbouncer_servers;
+DROP VIEW @extschema@.pgbouncer_dns_zones;
 
 CREATE OR REPLACE VIEW @extschema@.pgbouncer_servers AS
     SELECT pgbouncer_target_host
@@ -32,6 +40,14 @@ CREATE OR REPLACE VIEW @extschema@.pgbouncer_servers AS
         , tls
         , application_name
      FROM @extschema@.pgbouncer_servers_func();
+
+
+CREATE VIEW @extschema@.pgbouncer_dns_zones AS
+    SELECT pgbouncer_target_host
+        , zonename
+        , serial
+        , count
+     FROM @extschema@.pgbouncer_dns_zones_func();
 
 -- Restore dropped object privileges
 DO $$
