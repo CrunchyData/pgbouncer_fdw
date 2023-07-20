@@ -102,7 +102,7 @@ CREATE VIEW @extschema@.pgbouncer_pools AS
 
 CREATE VIEW @extschema@.pgbouncer_servers AS
     SELECT pgbouncer_target_host
-        "type"
+        , "type"
         , "user"
         , database
         , state
