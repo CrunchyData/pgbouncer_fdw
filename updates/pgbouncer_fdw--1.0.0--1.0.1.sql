@@ -1,4 +1,4 @@
--- Fix typo in view definition for pgbouncer_servers
+-- Fix missing comma that caused missing column "pgbouncer_target_host" in "pgbouncer_servers" view
 
 CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
 
