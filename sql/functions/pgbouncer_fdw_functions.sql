@@ -79,6 +79,7 @@ CREATE FUNCTION @extschema@.pgbouncer_clients_func() RETURNS TABLE
     , remote_pid int
     , tls text
     , application_name text
+    , prepared_statements int
 )
 LANGUAGE plpgsql
 AS $$
@@ -100,7 +101,7 @@ LOOP BEGIN
     INTO v_version_major, v_version_minor
     FROM @extschema@.pgbouncer_version_func(v_row.target_host);
   
-    IF v_version_major >= 1 AND v_version_minor >= 18 THEN 
+    IF v_version_major >= 1 AND v_version_minor >= 21 THEN 
         RETURN QUERY SELECT 
            v_row.target_host AS pgbouncer_target_host
            , x."type"
@@ -121,6 +122,50 @@ LOOP BEGIN
            , x.remote_pid
            , x.tls
            , x.application_name
+           , x.prepared_statements
+        FROM dblink(v_row.target_host, 'show clients') AS x
+        (  "type" text
+           , "user" text
+           , database text
+           , state text
+           , addr text
+           , port int
+           , local_addr text
+           , local_port int
+           , connect_time timestamp with time zone
+           , request_time timestamp with time zone
+           , wait int
+           , wait_us int
+           , close_needed int
+           , ptr text
+           , link text
+           , remote_pid int
+           , tls text
+           , application_name text
+           , prepared_statements int
+        );
+    ELSIF v_version_major >= 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
+        RETURN QUERY SELECT 
+           v_row.target_host AS pgbouncer_target_host
+           , x."type"
+           , x."user"
+           , x.database
+           , x.state
+           , x.addr
+           , x.port
+           , x.local_addr
+           , x.local_port
+           , x.connect_time
+           , x.request_time
+           , x.wait
+           , x.wait_us
+           , x.close_needed
+           , x.ptr
+           , x.link
+           , x.remote_pid
+           , x.tls
+           , x.application_name
+           , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show clients') AS x
         (  "type" text
            , "user" text
@@ -163,6 +208,7 @@ LOOP BEGIN
            , x.remote_pid
            , x.tls
            , '' AS application_name
+           , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show clients') AS x
         (  "type" text
            , "user" text
@@ -665,6 +711,7 @@ CREATE FUNCTION @extschema@.pgbouncer_servers_func() RETURNS TABLE
     , remote_pid int
     , tls text
     , application_name text
+    , prepared_statements int
 )
 LANGUAGE plpgsql
 AS $$
@@ -686,7 +733,7 @@ LOOP BEGIN
     INTO v_version_major, v_version_minor
     FROM @extschema@.pgbouncer_version_func(v_row.target_host);
   
-    IF v_version_major >= 1 AND v_version_minor >= 18 THEN 
+    IF v_version_major >= 1 AND v_version_minor >= 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
@@ -707,6 +754,51 @@ LOOP BEGIN
             , x.remote_pid
             , x.tls
             , x.application_name
+            , x.prepared_statements
+        FROM dblink(v_row.target_host, 'show servers') AS x
+        (   
+            "type" text
+            , "user" text
+            , database text
+            , state text
+            , addr text
+            , port int
+            , local_addr text
+            , local_port int
+            , connect_time timestamp with time zone
+            , request_time timestamp with time zone
+            , wait int
+            , wait_us int
+            , close_needed int
+            , ptr text
+            , link text
+            , remote_pid int
+            , tls text
+            , application_name text
+            , prepared_statements int
+        );
+    IF v_version_major >= 1 AND v_version_minor >= 18 and v_version_minor < 21 THEN 
+        RETURN QUERY SELECT 
+            v_row.target_host AS pgbouncer_target_host
+            , x."type"
+            , x."user"
+            , x.database
+            , x.state
+            , x.addr
+            , x.port
+            , x.local_addr
+            , x.local_port
+            , x.connect_time
+            , x.request_time
+            , x.wait
+            , x.wait_us
+            , x.close_needed
+            , x.ptr
+            , x.link
+            , x.remote_pid
+            , x.tls
+            , x.application_name
+            , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show servers') AS x
         (   
             "type" text
@@ -750,6 +842,7 @@ LOOP BEGIN
             , x.remote_pid
             , x.tls
             , '' AS application_name
+            , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show servers') AS x
         (   
             "type" text
@@ -823,6 +916,7 @@ CREATE FUNCTION @extschema@.pgbouncer_sockets_func() RETURNS TABLE
     , send_remain int
     , pkt_avail int
     , send_avail int
+    , prepared_statements int
 )
 LANGUAGE plpgsql
 AS $$
@@ -843,7 +937,7 @@ LOOP BEGIN
     INTO v_version_major, v_version_minor
     FROM @extschema@.pgbouncer_version_func(v_row.target_host);
   
-    IF v_version_major >= 1 AND v_version_minor >= 18 THEN 
+    IF v_version_major >= 1 AND v_version_minor >= 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
@@ -871,6 +965,65 @@ LOOP BEGIN
             , x.send_remain
             , x.pkt_avail
             , x.send_avail
+            , x.prepared_statements
+        FROM dblink(v_row.target_host, 'show sockets') AS x
+        (   
+            "type" text
+            , "user" text
+            , database text
+            , state text
+            , addr text
+            , port int
+            , local_addr text
+            , local_port int
+            , connect_time timestamp with time zone
+            , request_time timestamp with time zone
+            , wait int
+            , wait_us int
+            , close_needed int
+            , ptr text
+            , link text
+            , remote_pid int
+            , tls text
+            , application_name text
+            , recv_pos int
+            , pkt_pos int
+            , pkt_remain int
+            , send_pos int
+            , send_remain int
+            , pkt_avail int
+            , send_avail int
+            , prepared_statements int
+        );
+    IF v_version_major >= 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
+        RETURN QUERY SELECT 
+            v_row.target_host AS pgbouncer_target_host
+            , x."type"
+            , x."user"
+            , x.database
+            , x.state
+            , x.addr
+            , x.port
+            , x.local_addr
+            , x.local_port
+            , x.connect_time
+            , x.request_time
+            , x.wait
+            , x.wait_us
+            , x.close_needed
+            , x.ptr
+            , x.link
+            , x.remote_pid
+            , x.tls
+            , x.application_name
+            , x.recv_pos
+            , x.pkt_pos
+            , x.pkt_remain
+            , x.send_pos
+            , x.send_remain
+            , x.pkt_avail
+            , x.send_avail
+            , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show sockets') AS x
         (   
             "type" text
@@ -928,6 +1081,7 @@ LOOP BEGIN
             , x.send_remain
             , x.pkt_avail
             , x.send_avail
+            , 0 AS prepared_statements
         FROM dblink(v_row.target_host, 'show sockets') AS x
         (   
             "type" text

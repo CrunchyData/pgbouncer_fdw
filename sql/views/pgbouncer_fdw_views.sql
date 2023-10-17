@@ -26,6 +26,7 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , remote_pid
         , tls
         , application_name
+        , prepared_statements
     FROM @extschema@.pgbouncer_clients_func();
 
 
@@ -120,6 +121,7 @@ CREATE VIEW @extschema@.pgbouncer_servers AS
         , remote_pid
         , tls
         , application_name
+        , prepared_statements
      FROM @extschema@.pgbouncer_servers_func();
 
 
@@ -150,6 +152,7 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , send_remain
         , pkt_avail
         , send_avail
+        , prepared_statements
      FROM @extschema@.pgbouncer_sockets_func();
 
 
