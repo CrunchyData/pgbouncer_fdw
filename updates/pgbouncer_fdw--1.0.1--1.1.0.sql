@@ -136,7 +136,7 @@ LOOP BEGIN
            , application_name text
            , prepared_statements int
         );
-    ELSIF v_version_major >= 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
+    ELSIF v_version_major = 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
         RETURN QUERY SELECT 
            v_row.target_host AS pgbouncer_target_host
            , x."type"
@@ -329,7 +329,7 @@ LOOP BEGIN
             , application_name text
             , prepared_statements int
         );
-    IF v_version_major >= 1 AND v_version_minor >= 18 and v_version_minor < 21 THEN 
+    IF v_version_major = 1 AND v_version_minor >= 18 and v_version_minor < 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
@@ -544,7 +544,7 @@ LOOP BEGIN
             , send_avail int
             , prepared_statements int
         );
-    IF v_version_major >= 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
+    IF v_version_major = 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
