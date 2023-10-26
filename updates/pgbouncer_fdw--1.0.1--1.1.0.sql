@@ -1,29 +1,5 @@
 CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
 
-
-INSERT INTO pgbouncer_fdw_preserve_privs_temp 
-SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_clients_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
-FROM information_schema.routine_privileges
-WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_clients_func';
-
-INSERT INTO pgbouncer_fdw_preserve_privs_temp 
-SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_servers_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
-FROM information_schema.routine_privileges
-WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_servers_func';
-
-INSERT INTO pgbouncer_fdw_preserve_privs_temp 
-SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_sockets_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
-FROM information_schema.routine_privileges
-WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_sockets_func';
-
-DROP FUNCTION @extschema@.pgbouncer_clients_func();
-DROP FUNCTION @extschema@.pgbouncer_servers_func();
-DROP FUNCTION @extschema@.pgbouncer_sockets_func();
-
-
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_clients TO '||grantee::text||';'
 FROM information_schema.table_privileges
@@ -48,6 +24,29 @@ GROUP BY grantee;
 DROP VIEW @extschema@.pgbouncer_clients;
 DROP VIEW @extschema@.pgbouncer_servers;
 DROP VIEW @extschema@.pgbouncer_sockets;
+
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_clients_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_clients_func';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_servers_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_servers_func';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_sockets_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_sockets_func';
+
+DROP FUNCTION @extschema@.pgbouncer_clients_func();
+DROP FUNCTION @extschema@.pgbouncer_servers_func();
+DROP FUNCTION @extschema@.pgbouncer_sockets_func();
 
 
 CREATE FUNCTION @extschema@.pgbouncer_clients_func() RETURNS TABLE 
@@ -329,7 +328,7 @@ LOOP BEGIN
             , application_name text
             , prepared_statements int
         );
-    IF v_version_major = 1 AND v_version_minor >= 18 and v_version_minor < 21 THEN 
+    ELSIF v_version_major = 1 AND v_version_minor >= 18 and v_version_minor < 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
@@ -544,7 +543,7 @@ LOOP BEGIN
             , send_avail int
             , prepared_statements int
         );
-    IF v_version_major = 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
+    ELSIF v_version_major = 1 AND v_version_minor >= 18 AND v_version_minor < 21 THEN 
         RETURN QUERY SELECT 
             v_row.target_host AS pgbouncer_target_host
             , x."type"
