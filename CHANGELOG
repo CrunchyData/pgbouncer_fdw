@@ -1,3 +1,7 @@
+v1.1.0
+-- Add support for PgBouncer 1.21. Adds prepared_statements column to clients, servers and sockets functions and views.
+
+
 v1.0.1
 -- Fix missing comma that caused missing column "pgbouncer_target_host" in "pgbouncer_servers" and "pgbouncer_dns_zones" views
 
