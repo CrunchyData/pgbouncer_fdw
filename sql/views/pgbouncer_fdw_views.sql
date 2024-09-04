@@ -11,6 +11,7 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , "type"
         , "user"
         , database
+        , replication
         , state
         , addr
         , port
@@ -49,6 +50,7 @@ CREATE VIEW @extschema@.pgbouncer_databases AS
         , pool_size
         , min_pool_size
         , reserve_pool
+        , server_lifetime
         , pool_mode
         , max_connections
         , current_connections
@@ -106,6 +108,7 @@ CREATE VIEW @extschema@.pgbouncer_servers AS
         , "type"
         , "user"
         , database
+        , replication
         , state
         , addr
         , port
@@ -130,6 +133,7 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , "type"
         , "user"
         , database
+        , replication
         , state
         , addr
         , port
@@ -159,6 +163,7 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
 CREATE VIEW @extschema@.pgbouncer_stats AS
     SELECT pgbouncer_target_host
         , database
+        , total_server_assignment_count
         , total_xact_count
         , total_query_count
         , total_received
@@ -166,6 +171,7 @@ CREATE VIEW @extschema@.pgbouncer_stats AS
         , total_xact_time
         , total_query_time
         , total_wait_time
+        , avg_server_assignment_count
         , avg_xact_count
         , avg_query_count
         , avg_recv
@@ -179,5 +185,8 @@ CREATE VIEW @extschema@.pgbouncer_stats AS
 CREATE VIEW @extschema@.pgbouncer_users AS
     SELECT pgbouncer_target_host
         , name
+        , pool_size
         , pool_mode
+        , max_user_connections
+        , current_connections
      FROM @extschema@.pgbouncer_users_func();

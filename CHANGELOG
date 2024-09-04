@@ -1,3 +1,11 @@
+v1.2.0
+-- Add support for PgBouncer 1.23.
+  -- Adds replication column to clients, servers and sockets functions and views.
+  -- Adds server_lifetime column to databases functions and views.
+  -- Adds total_server_assignment_count and avg_server_assignment_count columns to stats functions and views.
+  -- Adds pool_size, max_user_connections and current_connections columns to users functions and views.
+
+
 v1.1.0
 -- Add support for PgBouncer 1.21. Adds prepared_statements column to clients, servers and sockets functions and views.
 
