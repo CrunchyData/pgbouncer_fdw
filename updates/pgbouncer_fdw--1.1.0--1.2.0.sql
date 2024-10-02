@@ -5,6 +5,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_cli
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_clients'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
@@ -12,6 +13,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_ser
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_servers'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
@@ -19,6 +21,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_soc
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_sockets'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
@@ -26,6 +29,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_dat
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_databases'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
@@ -33,6 +37,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_sta
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_stats'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
@@ -40,6 +45,7 @@ SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_use
 FROM information_schema.table_privileges
 WHERE table_schema = '@extschema@'
 AND table_name = 'pgbouncer_users'
+AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
 DROP VIEW @extschema@.pgbouncer_clients;
@@ -53,37 +59,43 @@ INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_clients_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_clients_func';
+AND routine_name = 'pgbouncer_clients_func'
+AND grantee != 'PUBLIC';
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp 
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_servers_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_servers_func';
+AND routine_name = 'pgbouncer_servers_func'
+AND grantee != 'PUBLIC';
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp 
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_sockets_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_sockets_func';
+AND routine_name = 'pgbouncer_sockets_func'
+AND grantee != 'PUBLIC';
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_databases_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';'
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_databases_func';
+AND routine_name = 'pgbouncer_databases_func'
+AND grantee != 'PUBLIC';
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_stats_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';'
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_stats_func';
+AND routine_name = 'pgbouncer_stats_func'
+AND grantee != 'PUBLIC';
 
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_users_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';'
 FROM information_schema.routine_privileges
 WHERE routine_schema = '@extschema@'
-AND routine_name = 'pgbouncer_users_func';
+AND routine_name = 'pgbouncer_users_func'
+AND grantee != 'PUBLIC';
 
 DROP FUNCTION @extschema@.pgbouncer_clients_func();
 DROP FUNCTION @extschema@.pgbouncer_servers_func();
