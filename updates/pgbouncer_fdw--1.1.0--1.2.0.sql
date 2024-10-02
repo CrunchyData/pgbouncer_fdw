@@ -918,16 +918,22 @@ CREATE FUNCTION @extschema@.pgbouncer_databases_func() RETURNS TABLE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
+    ex_context          text;
+    ex_detail           text;
+    ex_hint             text;
+    ex_message          text;
+    v_row               record;
+    v_version_major     int;
+    v_version_minor     int;
 BEGIN
 
 FOR v_row IN
     SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
 LOOP BEGIN
+
+    SELECT version_major, version_minor
+    INTO v_version_major, v_version_minor
+    FROM @extschema@.pgbouncer_version_func(v_row.target_host);
 
     IF v_version_major >= 1 AND v_version_minor >= 23 THEN
         RETURN QUERY SELECT
@@ -996,6 +1002,9 @@ LOOP BEGIN
             , paused int
             , disabled int
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
+    END IF;
     EXCEPTION
         WHEN connection_exception THEN
             RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
@@ -1039,16 +1048,22 @@ CREATE FUNCTION @extschema@.pgbouncer_stats_func() RETURNS TABLE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
+    ex_context          text;
+    ex_detail           text;
+    ex_hint             text;
+    ex_message          text;
+    v_row               record;
+    v_version_major     int;
+    v_version_minor     int;
 BEGIN
 
 FOR v_row IN
     SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
 LOOP BEGIN
+
+    SELECT version_major, version_minor
+    INTO v_version_major, v_version_minor
+    FROM @extschema@.pgbouncer_version_func(v_row.target_host);
 
     IF v_version_major >= 1 AND v_version_minor >= 23 THEN
         RETURN QUERY SELECT
@@ -1128,6 +1143,9 @@ LOOP BEGIN
             , avg_query_time bigint
             , avg_wait_time bigint
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
+    END IF;
     EXCEPTION
         WHEN connection_exception THEN
             RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
@@ -1159,16 +1177,23 @@ CREATE FUNCTION @extschema@.pgbouncer_users_func() RETURNS TABLE
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
+    ex_context          text;
+    ex_detail           text;
+    ex_hint             text;
+    ex_message          text;
+    v_row               record;
+    v_version_major     int;
+    v_version_minor     int;
 BEGIN
 
 FOR v_row IN
     SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
 LOOP BEGIN
+
+    SELECT version_major, version_minor
+    INTO v_version_major, v_version_minor
+    FROM @extschema@.pgbouncer_version_func(v_row.target_host);
+
     IF v_version_major >= 1 AND v_version_minor >= 23 THEN
         RETURN QUERY SELECT
             v_row.target_host AS pgbouncer_target_host
@@ -1198,6 +1223,9 @@ LOOP BEGIN
             name text
             , pool_mode text
         );
+    ELSE
+        RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
+    END IF;
     EXCEPTION
         WHEN connection_exception THEN
             RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
