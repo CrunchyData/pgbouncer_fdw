@@ -1,59 +1,126 @@
 
-/**** VIEW FUNCTIONS ****/
+CREATE TEMP TABLE pgbouncer_fdw_preserve_privs_temp (statement text);
 
-/*
- * pgbouncer_version_func
- */
-CREATE FUNCTION  @extschema@.pgbouncer_version_func(p_target_host text DEFAULT NULL) RETURNS TABLE
-(
-    pgbouncer_target_host text
-    , version_major int
-    , version_minor int
-    , version_patch int
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row   record;
-    v_sql   text;
-BEGIN
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_clients_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_clients_func'
+AND grantee != 'PUBLIC';
 
-v_sql := 'SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active';
-IF p_target_host IS NOT NULL THEN
-    v_sql := v_sql || format(' AND target_host = %L', p_target_host);
-END IF;
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_databases_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_databases_func'
+AND grantee != 'PUBLIC';
 
-FOR v_row IN EXECUTE v_sql
-LOOP BEGIN
-    RETURN QUERY SELECT 
-        v_row.target_host AS pgbouncer_target_host
-        , split_part(substring(version from '\d.+'), '.', 1)::int AS version_major
-        , split_part(substring(version from '\d.+'), '.', 2)::int AS version_minor
-        , split_part(substring(version from '\d.+'), '.', 3)::int AS version_patch
-    FROM dblink(v_row.target_host, 'show version') AS x
-    (   
-        version text
-    );
-    EXCEPTION
-        WHEN connection_exception THEN
-            GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                    ex_context = PG_EXCEPTION_CONTEXT,
-                                    ex_detail = PG_EXCEPTION_DETAIL,
-                                    ex_hint = PG_EXCEPTION_HINT;
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.
-ORIGINAL ERROR: %
-CONTEXT: %
-DETAIL: %
-HINT: %', v_row.target_host, ex_message, ex_context, ex_detail, ex_hint;
-END;
-END LOOP;
-END
-$$;
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_pools_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_pools_func'
+AND grantee != 'PUBLIC';
 
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_servers_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_servers_func'
+AND grantee != 'PUBLIC';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_sockets_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_sockets_func'
+AND grantee != 'PUBLIC';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_stats_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_stats_func'
+AND grantee != 'PUBLIC';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp 
+SELECT 'GRANT EXECUTE ON FUNCTION @extschema@.pgbouncer_users_func()  TO '||array_to_string(array_agg('"'||grantee::text||'"'), ',')||';' 
+FROM information_schema.routine_privileges
+WHERE routine_schema = '@extschema@'
+AND routine_name = 'pgbouncer_users_func'
+AND grantee != 'PUBLIC';
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_clients TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_clients'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_databases TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_databases'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_pools TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_pools'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_servers TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_servers'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_sockets TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_sockets'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_stats TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_stats'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+INSERT INTO pgbouncer_fdw_preserve_privs_temp
+SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_users TO '||grantee::text||';'
+FROM information_schema.table_privileges
+WHERE table_schema = '@extschema@'
+AND table_name = 'pgbouncer_users'
+AND grantee != 'PUBLIC'
+GROUP BY grantee;
+
+DROP VIEW @extschema@.pgbouncer_clients;
+DROP VIEW @extschema@.pgbouncer_databases;
+DROP VIEW @extschema@.pgbouncer_pools;
+DROP VIEW @extschema@.pgbouncer_servers;
+DROP VIEW @extschema@.pgbouncer_sockets;
+DROP VIEW @extschema@.pgbouncer_stats;
+DROP VIEW @extschema@.pgbouncer_users;
+
+DROP FUNCTION @extschema@.pgbouncer_clients_func();
+DROP FUNCTION @extschema@.pgbouncer_databases_func();
+DROP FUNCTION @extschema@.pgbouncer_pools_func();
+DROP FUNCTION @extschema@.pgbouncer_servers_func();
+DROP FUNCTION @extschema@.pgbouncer_sockets_func();
+DROP FUNCTION @extschema@.pgbouncer_stats_func();
+DROP FUNCTION @extschema@.pgbouncer_users_func();
 
 /*
  * pgbouncer_clients_func
@@ -354,62 +421,6 @@ $$;
 
 
 /*
- * pgbouncer_config_func
- */
-CREATE FUNCTION @extschema@.pgbouncer_config_func() RETURNS TABLE 
-( 
-    pgbouncer_target_host text
-    , key text
-    , value text
-    , "default" text
-    , changeable boolean
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
-BEGIN
-
-FOR v_row IN  
-    SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
-LOOP BEGIN
-
-    RETURN QUERY SELECT 
-        v_row.target_host AS pgbouncer_target_host
-        , x.key
-        , x.value
-        , x."default"
-        , x.changeable
-    FROM dblink(v_row.target_host, 'show config') AS x
-    (   key text
-        , value text
-        , "default" text
-        , changeable boolean
-    );
-    EXCEPTION
-        WHEN connection_exception THEN
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
-            GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                    ex_context = PG_EXCEPTION_CONTEXT,
-                                    ex_detail = PG_EXCEPTION_DETAIL,
-                                    ex_hint = PG_EXCEPTION_HINT;
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.
-ORIGINAL ERROR: %
-CONTEXT: %
-DETAIL: %
-HINT: %', v_row.target_host, ex_message, ex_context, ex_detail, ex_hint;
-END;
-END LOOP;
-
-END
-$$;
-
-
-/*
  * pgbouncer_databases_func
  */
 CREATE FUNCTION @extschema@.pgbouncer_databases_func() RETURNS TABLE
@@ -571,165 +582,6 @@ LOOP BEGIN
     ELSE
         RAISE EXCEPTION 'Encountered unsupported version of PgBouncer: %.%.x', v_version_major, v_version_minor;
     END IF;
-    EXCEPTION
-        WHEN connection_exception THEN
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
-            GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                    ex_context = PG_EXCEPTION_CONTEXT,
-                                    ex_detail = PG_EXCEPTION_DETAIL,
-                                    ex_hint = PG_EXCEPTION_HINT;
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.
-ORIGINAL ERROR: %
-CONTEXT: %
-DETAIL: %
-HINT: %', v_row.target_host, ex_message, ex_context, ex_detail, ex_hint;
-END;
-END LOOP;
-
-END
-$$;
-
-
-/*
- * pgbouncer_dns_hosts_func
- */
-CREATE FUNCTION @extschema@.pgbouncer_dns_hosts_func() RETURNS TABLE 
-( 
-    pgbouncer_target_host text
-    , hostname text
-    , ttl bigint
-    , addrs text
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
-BEGIN
-
-FOR v_row IN  
-    SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
-LOOP BEGIN
-
-    RETURN QUERY SELECT 
-        v_row.target_host AS pgbouncer_target_host
-        , x.hostname
-        , x.ttl
-        , x.addrs
-    FROM dblink(v_row.target_host, 'show dns_hosts') AS x
-    (   
-        hostname text
-        , ttl bigint
-        , addrs text
-    );
-    EXCEPTION
-        WHEN connection_exception THEN
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
-            GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                    ex_context = PG_EXCEPTION_CONTEXT,
-                                    ex_detail = PG_EXCEPTION_DETAIL,
-                                    ex_hint = PG_EXCEPTION_HINT;
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.
-ORIGINAL ERROR: %
-CONTEXT: %
-DETAIL: %
-HINT: %', v_row.target_host, ex_message, ex_context, ex_detail, ex_hint;
-END;
-END LOOP;
-
-END
-$$;
-
-
-/*
- * pgbouncer_dns_zones_func
- */
-CREATE FUNCTION @extschema@.pgbouncer_dns_zones_func() RETURNS TABLE 
-( 
-    pgbouncer_target_host text
-    , zonename text
-    , serial text
-    , count int
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
-BEGIN
-
-FOR v_row IN  
-    SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
-LOOP BEGIN
-
-    RETURN QUERY SELECT 
-        v_row.target_host AS pgbouncer_target_host
-        , x.zonename
-        , x.serial
-        , x.count
-    FROM dblink(v_row.target_host, 'show dns_zones') AS x
-    (   
-        zonename text
-        , serial text
-        , count int
-    );
-    EXCEPTION
-        WHEN connection_exception THEN
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
-            GET STACKED DIAGNOSTICS ex_message = MESSAGE_TEXT,
-                                    ex_context = PG_EXCEPTION_CONTEXT,
-                                    ex_detail = PG_EXCEPTION_DETAIL,
-                                    ex_hint = PG_EXCEPTION_HINT;
-            RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.
-ORIGINAL ERROR: %
-CONTEXT: %
-DETAIL: %
-HINT: %', v_row.target_host, ex_message, ex_context, ex_detail, ex_hint;
-END;
-END LOOP;
-
-END
-$$;
-
-
-/*
- * pgbouncer_lists_func
- */ 
-CREATE FUNCTION @extschema@.pgbouncer_lists_func() RETURNS TABLE 
-( 
-    pgbouncer_target_host text
-    , list text
-    , items int
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    ex_context                      text;
-    ex_detail                       text;
-    ex_hint                         text;
-    ex_message                      text;
-    v_row       record;
-BEGIN
-
-FOR v_row IN  
-    SELECT target_host FROM @extschema@.pgbouncer_fdw_targets WHERE active
-LOOP BEGIN
-
-    RETURN QUERY SELECT 
-        v_row.target_host AS pgbouncer_target_host
-        , x.list
-        , x.items
-    FROM dblink(v_row.target_host, 'show lists') AS x
-    (   
-        list text
-        , items int
-    );
     EXCEPTION
         WHEN connection_exception THEN
             RAISE WARNING 'pgbouncer_fdw: Unable to establish connection to pgBouncer target host: %. Continuing to additional hosts.', v_row.target_host;
@@ -1944,127 +1796,178 @@ END
 $$;
 
 
+CREATE VIEW @extschema@.pgbouncer_clients AS
+    SELECT pgbouncer_target_host
+        , "type"
+        , "user"
+        , database
+        , replication
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+        , prepared_statements
+        , id
+    FROM @extschema@.pgbouncer_clients_func();
+
+CREATE VIEW @extschema@.pgbouncer_databases AS
+    SELECT pgbouncer_target_host
+        , name
+        , host
+        , port
+        , database
+        , force_user
+        , pool_size
+        , min_pool_size
+        , reserve_pool
+        , server_lifetime
+        , pool_mode
+        , load_balance_hosts
+        , max_connections
+        , current_connections
+        , max_client_connections
+        , current_client_connections
+        , paused
+        , disabled
+     FROM @extschema@.pgbouncer_databases_func();
+
+CREATE VIEW @extschema@.pgbouncer_pools AS
+    SELECT pgbouncer_target_host 
+        , database
+        , "user"
+        , cl_active
+        , cl_waiting
+        , cl_active_cancel_req
+        , cl_waiting_cancel_req
+        , sv_active
+        , sv_active_cancel
+        , sv_being_canceled
+        , sv_idle
+        , sv_used
+        , sv_tested
+        , sv_login
+        , maxwait
+        , maxwait_us
+        , pool_mode
+        , load_balance_hosts
+    FROM @extschema@.pgbouncer_pools_func();
+
+CREATE VIEW @extschema@.pgbouncer_servers AS
+    SELECT pgbouncer_target_host
+        , "type"
+        , "user"
+        , database
+        , replication
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+        , prepared_statements
+        , id
+     FROM @extschema@.pgbouncer_servers_func();
+
+CREATE VIEW @extschema@.pgbouncer_sockets AS
+    SELECT pgbouncer_target_host
+        , "type"
+        , "user"
+        , database
+        , replication
+        , state
+        , addr
+        , port
+        , local_addr
+        , local_port
+        , connect_time
+        , request_time
+        , wait
+        , wait_us
+        , close_needed
+        , ptr
+        , link
+        , remote_pid
+        , tls
+        , application_name
+        , recv_pos
+        , pkt_pos
+        , pkt_remain
+        , send_pos
+        , send_remain
+        , pkt_avail
+        , send_avail
+        , prepared_statements
+        , id
+     FROM @extschema@.pgbouncer_sockets_func();
+
+CREATE VIEW @extschema@.pgbouncer_stats AS
+    SELECT pgbouncer_target_host
+        , database
+        , total_server_assignment_count
+        , total_xact_count
+        , total_query_count
+        , total_received
+        , total_sent
+        , total_xact_time
+        , total_query_time
+        , total_wait_time
+        , avg_server_assignment_count
+        , avg_xact_count
+        , avg_query_count
+        , avg_recv
+        , avg_sent
+        , avg_xact_time
+        , avg_query_time
+        , avg_wait_time
+        , avg_client_parse_count
+        , avg_server_parse_count
+        , avg_bind_count
+     FROM @extschema@.pgbouncer_stats_func();
+
+CREATE VIEW @extschema@.pgbouncer_users AS
+    SELECT pgbouncer_target_host
+        , name
+        , pool_size
+        , reserve_pool_size
+        , pool_mode
+        , max_user_connections
+        , current_connections
+        , max_user_client_connections
+        , current_client_connections
+     FROM @extschema@.pgbouncer_users_func();
 
 
-/**** ADMIN FUNCTIONS ****/
-
-CREATE FUNCTION @extschema@.pgbouncer_command_disable(p_dbname text, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
+-- Restore dropped object privileges
+DO $$
+DECLARE
+v_row   record;
 BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, format('DISABLE %I', p_dbname));
+    FOR v_row IN SELECT statement FROM pgbouncer_fdw_preserve_privs_temp LOOP
+        IF v_row.statement IS NOT NULL THEN
+            EXECUTE v_row.statement;
+        END IF;
+    END LOOP;
 END
 $$;
 
-CREATE FUNCTION @extschema@.pgbouncer_command_enable(p_dbname text, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, format('ENABLE %I', p_dbname));
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_kill(p_dbname text DEFAULT NULL, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_dbname IS NULL THEN
-        PERFORM dblink_exec(p_pgbouncer_target_host, 'KILL');
-    ELSE
-        PERFORM dblink_exec(p_pgbouncer_target_host, format('KILL %I', p_dbname));
-    END IF;
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_pause(p_dbname text DEFAULT NULL, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_dbname IS NULL THEN
-        PERFORM dblink_exec(p_pgbouncer_target_host, 'PAUSE');
-    ELSE
-        PERFORM dblink_exec(p_pgbouncer_target_host, format('PAUSE %I', p_dbname));
-    END IF;
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_reconnect(p_dbname text DEFAULT NULL, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_dbname IS NULL THEN
-        PERFORM dblink_exec(p_pgbouncer_target_host, 'RECONNECT');
-    ELSE
-        PERFORM dblink_exec(p_pgbouncer_target_host, format('RECONNECT %I', p_dbname));
-    END IF;
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_reload(p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, 'RELOAD');
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_resume(p_dbname text DEFAULT NULL, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_dbname IS NULL THEN
-        PERFORM dblink_exec(p_pgbouncer_target_host, 'RESUME');
-    ELSE
-        PERFORM dblink_exec(p_pgbouncer_target_host, format('RESUME %I', p_dbname));
-    END IF;
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_set(p_name text, p_value text, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, format('SET %s = %L', p_name, p_value));
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_shutdown(p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, 'shutdown');
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_suspend(p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    PERFORM dblink_exec(p_pgbouncer_target_host, 'SUSPEND');
-END
-$$;
-
-CREATE FUNCTION @extschema@.pgbouncer_command_wait_close(p_dbname text DEFAULT NULL, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
-LANGUAGE plpgsql
-AS $$
-BEGIN
-    IF p_dbname IS NULL THEN
-        PERFORM dblink_exec(p_pgbouncer_target_host, 'WAIT_CLOSE');
-    ELSE
-        PERFORM dblink_exec(p_pgbouncer_target_host, format('WAIT_CLOSE %I', p_dbname));
-    END IF;
-END
-$$;
-
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_disable(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_enable(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_kill(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_pause(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_reconnect(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_reload(text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_resume(text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_set(text, text, text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_shutdown(text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_suspend(text) FROM PUBLIC;
-REVOKE EXECUTE ON FUNCTION @extschema@.pgbouncer_command_wait_close(text, text) FROM PUBLIC;
-
+DROP TABLE IF EXISTS pgbouncer_fdw_preserve_privs_temp;
