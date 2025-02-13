@@ -28,6 +28,7 @@ CREATE VIEW @extschema@.pgbouncer_clients AS
         , tls
         , application_name
         , prepared_statements
+        , id
     FROM @extschema@.pgbouncer_clients_func();
 
 
@@ -52,8 +53,11 @@ CREATE VIEW @extschema@.pgbouncer_databases AS
         , reserve_pool
         , server_lifetime
         , pool_mode
+        , load_balance_hosts
         , max_connections
         , current_connections
+        , max_client_connections
+        , current_client_connections
         , paused
         , disabled
      FROM @extschema@.pgbouncer_databases_func();
@@ -100,6 +104,7 @@ CREATE VIEW @extschema@.pgbouncer_pools AS
         , maxwait
         , maxwait_us
         , pool_mode
+        , load_balance_hosts
     FROM @extschema@.pgbouncer_pools_func();
 
 
@@ -125,6 +130,7 @@ CREATE VIEW @extschema@.pgbouncer_servers AS
         , tls
         , application_name
         , prepared_statements
+        , id
      FROM @extschema@.pgbouncer_servers_func();
 
 
@@ -157,6 +163,7 @@ CREATE VIEW @extschema@.pgbouncer_sockets AS
         , pkt_avail
         , send_avail
         , prepared_statements
+        , id
      FROM @extschema@.pgbouncer_sockets_func();
 
 
@@ -179,6 +186,9 @@ CREATE VIEW @extschema@.pgbouncer_stats AS
         , avg_xact_time
         , avg_query_time
         , avg_wait_time
+        , avg_client_parse_count
+        , avg_server_parse_count
+        , avg_bind_count
      FROM @extschema@.pgbouncer_stats_func();
 
 
@@ -186,7 +196,11 @@ CREATE VIEW @extschema@.pgbouncer_users AS
     SELECT pgbouncer_target_host
         , name
         , pool_size
+        , reserve_pool_size
         , pool_mode
         , max_user_connections
         , current_connections
+        , max_user_client_connections
+        , current_client_connections
      FROM @extschema@.pgbouncer_users_func();
+

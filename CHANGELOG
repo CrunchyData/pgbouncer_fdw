@@ -1,3 +1,9 @@
+v1.3.0
+-- Update to support pgBouncer 1.24
+-- Improved support for newer columns that don't exist in older versions of pgBouncer
+-- Add checks to ensure future compatibility works for all versions of 1.x but stops before 2.x
+
+
 v1.2.0
 -- Add support for PgBouncer 1.23.
   -- Adds replication column to clients, servers and sockets functions and views.
