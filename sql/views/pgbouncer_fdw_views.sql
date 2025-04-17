@@ -201,4 +201,3 @@ CREATE VIEW @extschema@.pgbouncer_users AS
         , max_user_client_connections
         , current_client_connections
      FROM @extschema@.pgbouncer_users_func();
-
