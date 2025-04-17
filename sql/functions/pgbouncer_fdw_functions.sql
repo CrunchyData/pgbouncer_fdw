@@ -422,7 +422,7 @@ CREATE FUNCTION @extschema@.pgbouncer_databases_func() RETURNS TABLE
     , force_user text
     , pool_size int
     , min_pool_size int
-    , reserve_pool int
+    , reserve_pool_size int
     , server_lifetime int
     , pool_mode text
     , load_balance_hosts int
@@ -464,7 +464,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool_size
                 , x.server_lifetime
                 , x.pool_mode
                 , x.load_balance_hosts
@@ -483,7 +483,7 @@ LOOP BEGIN
                 , force_user text
                 , pool_size int
                 , min_pool_size int
-                , reserve_pool int
+                , reserve_pool_size int
                 , server_lifetime int
                 , pool_mode text
                 , load_balance_hosts int
@@ -504,7 +504,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool AS reserve_pool_size
                 , x.server_lifetime
                 , x.pool_mode
                 , 0 AS load_balance_hosts
@@ -541,7 +541,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool AS reserve_pool_size
                 , 0 AS server_lifetime
                 , x.pool_mode
                 , 0 AS load_balance_hosts
@@ -588,7 +588,6 @@ END LOOP;
 
 END
 $$;
-
 
 /*
  * pgbouncer_dns_hosts_func

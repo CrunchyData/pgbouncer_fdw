@@ -40,7 +40,6 @@ CREATE VIEW @extschema@.pgbouncer_config AS
         , changeable
     FROM @extschema@.pgbouncer_config_func();
 
-
 CREATE VIEW @extschema@.pgbouncer_databases AS
     SELECT pgbouncer_target_host
         , name
@@ -50,7 +49,7 @@ CREATE VIEW @extschema@.pgbouncer_databases AS
         , force_user
         , pool_size
         , min_pool_size
-        , reserve_pool
+        , reserve_pool_size
         , server_lifetime
         , pool_mode
         , load_balance_hosts
@@ -61,7 +60,6 @@ CREATE VIEW @extschema@.pgbouncer_databases AS
         , paused
         , disabled
      FROM @extschema@.pgbouncer_databases_func();
-
 
 CREATE VIEW @extschema@.pgbouncer_dns_hosts AS
     SELECT pgbouncer_target_host
