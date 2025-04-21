@@ -1,3 +1,8 @@
+v1.4.0
+-- Update to support column change in databases from reserve_pool to reserve_pool_size in pgBouncer 1.24
+-- Set proper data type for reserve_pool_size in users
+
+
 v1.3.0
 -- Update to support pgBouncer 1.24
 -- Improved support for newer columns that don't exist in older versions of pgBouncer

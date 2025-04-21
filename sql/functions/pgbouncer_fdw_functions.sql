@@ -422,7 +422,7 @@ CREATE FUNCTION @extschema@.pgbouncer_databases_func() RETURNS TABLE
     , force_user text
     , pool_size int
     , min_pool_size int
-    , reserve_pool int
+    , reserve_pool_size int
     , server_lifetime int
     , pool_mode text
     , load_balance_hosts int
@@ -464,7 +464,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool_size
                 , x.server_lifetime
                 , x.pool_mode
                 , x.load_balance_hosts
@@ -483,7 +483,7 @@ LOOP BEGIN
                 , force_user text
                 , pool_size int
                 , min_pool_size int
-                , reserve_pool int
+                , reserve_pool_size int
                 , server_lifetime int
                 , pool_mode text
                 , load_balance_hosts int
@@ -504,7 +504,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool AS reserve_pool_size
                 , x.server_lifetime
                 , x.pool_mode
                 , 0 AS load_balance_hosts
@@ -541,7 +541,7 @@ LOOP BEGIN
                 , x.force_user
                 , x.pool_size
                 , x.min_pool_size
-                , x.reserve_pool
+                , x.reserve_pool AS reserve_pool_size
                 , 0 AS server_lifetime
                 , x.pool_mode
                 , 0 AS load_balance_hosts
@@ -588,7 +588,6 @@ END LOOP;
 
 END
 $$;
-
 
 /*
  * pgbouncer_dns_hosts_func
@@ -1837,7 +1836,7 @@ CREATE FUNCTION @extschema@.pgbouncer_users_func() RETURNS TABLE
     pgbouncer_target_host text
     , name text
     , pool_size int
-    , reserve_pool_size text
+    , reserve_pool_size int
     , pool_mode text
     , max_user_connections int
     , current_connections int
@@ -1880,7 +1879,7 @@ LOOP BEGIN
             (
                 name text
                 , pool_size int
-                , reserve_pool_size text
+                , reserve_pool_size int
                 , pool_mode text
                 , max_user_connections int
                 , current_connections int
@@ -1892,7 +1891,7 @@ LOOP BEGIN
                 v_row.target_host AS pgbouncer_target_host
                 , x.name
                 , x.pool_size
-                , '' AS reserve_pool_size
+                , 0 AS reserve_pool_size
                 , x.pool_mode
                 , x.max_user_connections
                 , x.current_connections
@@ -1911,7 +1910,7 @@ LOOP BEGIN
                 v_row.target_host AS pgbouncer_target_host
                 , x.name
                 , 0 AS pool_size
-                , '' AS reserve_pool_size
+                , 0 AS reserve_pool_size
                 , x.pool_mode
                 , 0 AS max_user_connections
                 , 0 AS current_connections
