@@ -32,7 +32,6 @@ AND table_name = 'pgbouncer_users'
 AND grantee != 'PUBLIC'
 GROUP BY grantee;
 
-
 DROP VIEW @extschema@.pgbouncer_databases;
 DROP VIEW @extschema@.pgbouncer_users;
 
@@ -243,8 +242,8 @@ CREATE FUNCTION @extschema@.pgbouncer_users_func() RETURNS TABLE
 (
     pgbouncer_target_host text
     , name text
-    , pool_size int
-    , reserve_pool_size int
+    , pool_size text
+    , reserve_pool_size text
     , pool_mode text
     , max_user_connections int
     , current_connections int
@@ -286,8 +285,8 @@ LOOP BEGIN
             FROM dblink(v_row.target_host, 'show users') AS x
             (
                 name text
-                , pool_size int
-                , reserve_pool_size int
+                , pool_size text
+                , reserve_pool_size text
                 , pool_mode text
                 , max_user_connections int
                 , current_connections int
@@ -299,7 +298,7 @@ LOOP BEGIN
                 v_row.target_host AS pgbouncer_target_host
                 , x.name
                 , x.pool_size
-                , 0 AS reserve_pool_size
+                , '' AS reserve_pool_size
                 , x.pool_mode
                 , x.max_user_connections
                 , x.current_connections
@@ -308,7 +307,7 @@ LOOP BEGIN
             FROM dblink(v_row.target_host, 'show users') AS x
             (
                 name text
-                , pool_size int
+                , pool_size text
                 , pool_mode text
                 , max_user_connections int
                 , current_connections int
@@ -317,8 +316,8 @@ LOOP BEGIN
             RETURN QUERY SELECT
                 v_row.target_host AS pgbouncer_target_host
                 , x.name
-                , 0 AS pool_size
-                , 0 AS reserve_pool_size
+                , '' AS pool_size
+                , '' AS reserve_pool_size
                 , x.pool_mode
                 , 0 AS max_user_connections
                 , 0 AS current_connections
