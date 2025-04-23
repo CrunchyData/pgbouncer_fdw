@@ -16,7 +16,6 @@ WHERE routine_schema = '@extschema@'
 AND routine_name = 'pgbouncer_users_func'
 AND grantee != 'PUBLIC';
 
-
 INSERT INTO pgbouncer_fdw_preserve_privs_temp
 SELECT 'GRANT '||string_agg(privilege_type, ',')||' ON @extschema@.pgbouncer_databases TO '||grantee::text||';'
 FROM information_schema.table_privileges
