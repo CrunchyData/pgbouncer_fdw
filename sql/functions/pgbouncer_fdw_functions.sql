@@ -1891,7 +1891,7 @@ LOOP BEGIN
                 v_row.target_host AS pgbouncer_target_host
                 , x.name
                 , x.pool_size
-                , 0 AS reserve_pool_size
+                , '' AS reserve_pool_size
                 , x.pool_mode
                 , x.max_user_connections
                 , x.current_connections
