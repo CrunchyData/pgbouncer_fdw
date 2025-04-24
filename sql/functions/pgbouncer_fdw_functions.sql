@@ -1944,7 +1944,6 @@ $$;
 
 
 
-
 /**** ADMIN FUNCTIONS ****/
 
 CREATE FUNCTION @extschema@.pgbouncer_command_disable(p_dbname text, p_pgbouncer_target_host text DEFAULT 'pgbouncer') RETURNS void
